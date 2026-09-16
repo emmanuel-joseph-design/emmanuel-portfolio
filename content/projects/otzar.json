@@ -1,0 +1,200 @@
+{
+  "slug": "otzar",
+  "title": "Otzar",
+  "description": "Tapnob is a Bitcoin payment platform designed to make it easier for people and businesses in Africa to use Bitcoin for everyday transactions.\n\nAs the founding designer, I developed the brand identity, visual system, product interface, and website. I also created marketing campaigns, social media assets, product documentation, and motion graphics to communicate the platform’s value clearly.\n\nThe goal was to make Bitcoin payments feel simple, trustworthy, and accessible while building a consistent brand experience across every touchpoint. The work helped position Tapnob as a credible Bitcoin payment solution and supported the company in securing its first grant.",
+  "client": "Tapnob",
+  "role": "Brand Designer",
+  "credits": "Emmanuel Folusho Joseph",
+  "year": 2026,
+  "order": 0,
+  "categories": [
+    "Brand",
+    "Marketing",
+    "Product"
+  ],
+  "cover_image": "/media/cms/4f7eac91-4c94-4f72-b924-dbd6a5c7fc52.webp",
+  "published": true,
+  "sections": [
+    {
+      "id": "70feae5a-91af-4428-96c2-d88b66744739",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1210729859"
+      ],
+      "order": 0
+    },
+    {
+      "id": "9cd7c67d-a7ab-477e-8e24-ab1ae2a24322",
+      "type": "double-image",
+      "assets": [
+        "https://player.vimeo.com/video/1227389472",
+        "/media/cms/031d5daa-69fe-41a6-b171-e632ca153d34.webp"
+      ],
+      "order": 1
+    },
+    {
+      "id": "5f975e1b-bdf0-4a57-9532-9011e163c892",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1227389469"
+      ],
+      "order": 2
+    },
+    {
+      "id": "149049f6-80a4-4623-9851-58a31cbf63d8",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/1cfe75fd-4b22-4c2f-87f1-838dbc393da5.webp",
+        "https://player.vimeo.com/video/1227389468"
+      ],
+      "order": 3
+    },
+    {
+      "id": "286efd08-53ba-4f64-a74b-3cd39e0b939e",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1227394300"
+      ],
+      "order": 4
+    },
+    {
+      "id": "34a808b1-af03-4b16-8250-36e6f6dec9a8",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1227389510"
+      ],
+      "order": 5
+    },
+    {
+      "id": "2ab9057b-3be1-4bbc-ba53-8f57ab33e095",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/ea5ec50a-42d1-4b25-a36e-d2cd411bff88.webp",
+        "/media/cms/f4f1b11f-2c11-49f3-816f-dc427d5403b2.webp"
+      ],
+      "order": 6
+    },
+    {
+      "id": "8b89e1af-7269-4907-992e-f1e8ca898861",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1227389527"
+      ],
+      "order": 7
+    },
+    {
+      "id": "fd1fc197-ed47-4e24-80cd-21c085309346",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/7c649380-9548-4f7c-b293-d17e28b27e89.webp"
+      ],
+      "order": 8
+    },
+    {
+      "id": "2193b01c-64b3-4124-b412-9173c3b9cd4c",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1227389538"
+      ],
+      "order": 9
+    },
+    {
+      "id": "9c682480-579d-42ac-b691-fa5a8c70352d",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/fecf19cb-679b-4414-8963-3003649362e9.webp"
+      ],
+      "order": 10
+    },
+    {
+      "id": "fe0123e5-6365-411b-b8f6-a2ecb9855527",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1227389540"
+      ],
+      "order": 11
+    },
+    {
+      "id": "5698806f-758e-4072-aa8d-57a1a8a3dd49",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1227391010"
+      ],
+      "order": 12
+    },
+    {
+      "id": "14e35b47-8d00-43fc-b0f4-cecd6f6fddde",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/0ee9505b-03e9-4bb0-bf88-4d6f94664896.webp"
+      ],
+      "order": 13
+    },
+    {
+      "id": "dbe158c1-b163-4bc5-9ef1-c6971b07ecc0",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1227395988"
+      ],
+      "order": 14
+    },
+    {
+      "id": "db8c33ac-cd44-4218-8abb-c8f2512530a5",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/a77a30a0-5398-4ec4-9f11-881495197b81.webp"
+      ],
+      "order": 15
+    },
+    {
+      "id": "ed81f976-5b5e-432b-8be5-328950f5582f",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1227396735"
+      ],
+      "order": 16
+    },
+    {
+      "id": "51d633a5-7c3a-4a45-9d25-3c24a9f7e4fb",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/5e56fa64-3569-4695-b23e-5a172eea6832.webp"
+      ],
+      "order": 17
+    },
+    {
+      "id": "0958812c-5c0f-49b5-8b41-b9940278b3a5",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/090c003e-dbda-4acb-bfc6-e3cee9773b56.webp"
+      ],
+      "order": 18
+    },
+    {
+      "id": "05ce88c3-d58d-41da-8ee8-34cda6718a23",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1227396820"
+      ],
+      "order": 19
+    },
+    {
+      "id": "2203f6fb-400b-46a4-8a76-609e08b34ad2",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/49b66b1d-35ed-480b-bc59-8ab5b822e27c.webp",
+        "/media/cms/fa4ef8a8-df58-49f3-8b88-23a188200088.webp"
+      ],
+      "order": 20
+    },
+    {
+      "id": "0ce1f512-066c-4374-9479-b0c0055ea152",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/8dc60d8d-0f41-4121-9752-3c115e78da07.webp"
+      ],
+      "order": 21
+    }
+  ],
+  "id": "otzar"
+}

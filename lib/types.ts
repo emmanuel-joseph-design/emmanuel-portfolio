@@ -6,6 +6,8 @@ export interface Section {
   type: SectionType;
   assets: string[];
   order: number;
+  aspectRatio?: number;
+  imageFit?: 'contain' | 'cover';
 }
 
 export interface Project {

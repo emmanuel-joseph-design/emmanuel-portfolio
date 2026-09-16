@@ -1,3 +1,6 @@
+import { createGallery, sizeGallery, layoutControls } from './gallery-layout.js';
+let editorLayouts = [];
+let previewLayouts = [];
 const $ = (id) => document.getElementById(id);
 const form = $('project-form');
 let csrf = '';
@@ -56,7 +59,7 @@ function changed() {
 
 function lock(value) {
   locked = value;
-  for (const control of document.querySelectorAll('#editor button,#editor input,#editor textarea')) control.disabled = value;
+  for (const control of document.querySelectorAll('#editor button,#editor input,#editor textarea,#editor select')) control.disabled = value;
 }
 
 function collect() {
@@ -166,20 +169,19 @@ function videoLinkField(current, onChanged, onCommit = renderMedia) {
   const zone = element('div', '', 'upload');
   const source = embedUrl(current);
   if (source) {
-    const frame = element('iframe', '', 'preview-media');
-    frame.src = source; frame.title = 'Embedded video preview'; frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'; frame.allowFullscreen = true;
-    frame.style.aspectRatio = '16 / 9'; frame.style.border = '0';
-    zone.append(frame);
+    const group = createGallery({ type: 'video', assets: [source] });
+    zone.append(group);
+    queueMicrotask(() => { if (group.isConnected) editorLayouts.push(sizeGallery(group)); });
   }
   zone.append(element('span', current ? 'Replace the video link' : 'Paste a YouTube or Vimeo video link'));
   const input = document.createElement('input');
-  input.type = 'url'; input.placeholder = 'https://www.youtube.com/watch?v=…'; input.value = current || ''; input.setAttribute('aria-label', 'YouTube or Vimeo video link');
+  input.type = 'url'; input.placeholder = 'https://www.youtube.com/watch?v=…'; input.value = current || '';
+  input.setAttribute('aria-label', 'YouTube or Vimeo video link');
   input.oninput = () => { onChanged(input.value.trim()); changed(); };
-  input.onchange = onCommit;
-  zone.append(input, element('small', 'The video stays hosted on YouTube or Vimeo · displayed at 16:9'));
+  input.onchange = () => { if (embedUrl(input.value)) renderMedia(); else onCommit(); };
+  zone.append(input, element('small', 'Original video proportions · use Frame proportions to adjust the project preview'));
   return zone;
 }
-
 function doubleMediaField(current, onChanged, index) {
   const slot = element('div', '', 'media-choice');
   slot.style.cssText = 'display:grid;align-content:start;gap:10px';
@@ -203,6 +205,7 @@ function doubleMediaField(current, onChanged, index) {
 }
 
 function renderMedia() {
+  editorLayouts.forEach((dispose) => dispose()); editorLayouts = [];
   $('cover').replaceChildren(uploadZone(project.cover_image, false, (url) => { project.cover_image = url; }));
   $('sections').replaceChildren();
   project.sections.forEach((section, index) => {
@@ -224,6 +227,7 @@ function renderMedia() {
     }
     head.append(controls);
     block.append(head);
+    block.append(layoutControls(section, changed));
     const group = element('div', '', section.type === 'double-image' ? 'pair' : '');
     section.assets.forEach((asset, assetIndex) => group.append(section.type === 'video' ? videoLinkField(asset, (url) => { section.assets[assetIndex] = url; }) : section.type === 'double-image' ? doubleMediaField(asset, (url) => { section.assets[assetIndex] = url; }, assetIndex) : uploadZone(asset, false, (url) => { section.assets[assetIndex] = url; })));
     block.append(group);
@@ -250,6 +254,7 @@ function editProject(value) {
 }
 
 function preview() {
+  previewLayouts.forEach((dispose) => dispose()); previewLayouts = [];
   const value = collect();
   const article = $('preview-content');
   article.replaceChildren();
@@ -263,17 +268,9 @@ function preview() {
   info.append(element('p', value.description), element('p', `${value.client}\n${value.role}\n${value.year} · ${value.categories.join(', ')}`));
   article.append(info);
   for (const section of value.sections) {
-    const group = element('div', '', section.type === 'double-image' ? 'pair' : '');
-    for (const asset of section.assets.filter(Boolean)) {
-      const embedded = embedUrl(asset);
-      const media = element(embedded ? 'iframe' : section.type === 'video' ? 'video' : 'img', '', 'preview-media');
-      media.src = embedded || assetUrl(asset);
-      if (embedded) { media.title = 'Embedded project video'; media.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'; media.allowFullscreen = true; media.style.aspectRatio = '16 / 9'; media.style.border = '0'; }
-      else if (section.type === 'video') media.controls = true;
-      else media.alt = 'Project image';
-      group.append(media);
-    }
+    const group = createGallery(section, assetUrl, embedUrl);
     article.append(group);
+    previewLayouts.push(sizeGallery(group, section));
   }
   article.append(element('p', value.credits, 'preview-credits'));
   $('preview-dialog').showModal();
@@ -332,3 +329,5 @@ async function start() {
 }
 
 start();
+
+$('preview-dialog').addEventListener('close', () => { $('preview-content').replaceChildren(); previewLayouts.forEach((dispose) => dispose()); previewLayouts = []; });

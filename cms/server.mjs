@@ -59,7 +59,16 @@ export function validateProject(value) {
         if (s.type === 'double-image') return localVideo;
         return embedded || localVideo;
       })) throw new Error('Choose the correct media type for this section.');
-      return { id: String(s.id || randomUUID()), type: s.type, assets, order };
+      const layout = {};
+      if (s.aspectRatio !== undefined) {
+        if (typeof s.aspectRatio !== 'number' || !Number.isFinite(s.aspectRatio) || s.aspectRatio < 0.1 || s.aspectRatio > 10) throw new Error('Invalid media layout.');
+        layout.aspectRatio = s.aspectRatio;
+      }
+      if (s.imageFit !== undefined) {
+        if (!['contain', 'cover'].includes(s.imageFit)) throw new Error('Invalid media layout.');
+        layout.imageFit = s.imageFit;
+      }
+      return { id: String(s.id || randomUUID()), type: s.type, assets, order, ...layout };
     }),
   };
 }
@@ -164,6 +173,7 @@ export async function createCMS({ root = path.dirname(here), allowPublish = true
       if (req.method === 'GET') {
         if (url.pathname === '/') return send(200, (await fs.readFile(path.join(here, 'index.html'), 'utf8')).replace('__TOKEN__', token), 'text/html; charset=utf-8');
         if (url.pathname === '/app.js') return send(200, await fs.readFile(path.join(here, 'app.js')), 'text/javascript');
+        if (['/gallery-layout.js', '/gallery-layout.css', '/vendor/vimeo-player.js'].includes(url.pathname)) return send(200, await fs.readFile(path.join(here, '../online-cms/public', url.pathname)), url.pathname.endsWith('.css') ? 'text/css' : 'text/javascript');
         if (url.pathname === '/style.css') return send(200, await fs.readFile(path.join(here, 'style.css')), 'text/css');
         if (url.pathname === '/api/projects') return send(200, await list());
         if (url.pathname === '/api/status') return send(200, job);

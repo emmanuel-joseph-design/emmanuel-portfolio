@@ -129,7 +129,16 @@ export function validateProject(value, { requireMedia = false } = {}) {
         const localVideo = MEDIA_TYPES[extension(asset)]?.startsWith('video/');
         if (section.type === 'video' ? !(embedded || localVideo) : section.type === 'double-image' ? localVideo : embedded || localVideo) throw new HttpError(400, 'Choose the correct image or video type for each section.');
       }
-      return { id: String(section.id || crypto.randomUUID()), type: section.type, assets, order };
+      const layout = {};
+      if (section.aspectRatio !== undefined) {
+        if (typeof section.aspectRatio !== 'number' || !Number.isFinite(section.aspectRatio) || section.aspectRatio < 0.1 || section.aspectRatio > 10) throw new HttpError(400, 'Invalid media layout.');
+        layout.aspectRatio = section.aspectRatio;
+      }
+      if (section.imageFit !== undefined) {
+        if (!['contain', 'cover'].includes(section.imageFit)) throw new HttpError(400, 'Invalid media layout.');
+        layout.imageFit = section.imageFit;
+      }
+      return { id: String(section.id || crypto.randomUUID()), type: section.type, assets, order, ...layout };
     }),
   };
   if (project.cover_image && MEDIA_TYPES[extension(project.cover_image)].startsWith('video/')) throw new HttpError(400, 'The project cover must be an image.');

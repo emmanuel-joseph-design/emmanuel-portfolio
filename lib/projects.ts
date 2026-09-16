@@ -15,6 +15,8 @@ export function getProjects(): Project[] {
     for (const section of project.sections) {
       const count = section.type === 'double-image' ? 2 : 1;
       if (!['full-image', 'double-image', 'video'].includes(section.type) || !Array.isArray(section.assets) || section.assets.length !== count) fail('Invalid gallery section.');
+      if (section.aspectRatio !== undefined && (typeof section.aspectRatio !== 'number' || !Number.isFinite(section.aspectRatio) || section.aspectRatio < 0.1 || section.aspectRatio > 10)) fail('Invalid media proportions.');
+      if (section.imageFit !== undefined && !['contain', 'cover'].includes(section.imageFit)) fail('Invalid image fitting.');
       for (const asset of section.assets) {
         const embeddedVideo = /^https:\/\/(?:www\.youtube-nocookie\.com\/embed\/[a-zA-Z0-9_-]{6,20}|player\.vimeo\.com\/video\/\d+)$/.test(asset);
         const localVideo = /^\/media\/cms\/.+\.(?:mp4|webm)$/.test(asset);

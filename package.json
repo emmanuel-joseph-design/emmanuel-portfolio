@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "cms": "node cms/server.mjs",
-    "test:cms": "node --test cms/server.test.mjs",
+    "test:cms": "node --test cms/server.test.mjs cms/gallery-layout.test.mjs",
     "cms:online:dev": "wrangler dev --config online-cms/wrangler.jsonc",
     "cms:online:deploy": "wrangler deploy --config online-cms/wrangler.jsonc",
     "test:cms:online": "node --test online-cms/worker.test.mjs",

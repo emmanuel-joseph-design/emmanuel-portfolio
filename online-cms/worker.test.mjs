@@ -114,6 +114,36 @@ test('saving retries stale GitHub versions without changing the submitted draft'
   assert.equal(new Set(reads).size, 2);
 });
 
+test('publishing retries a competing public branch update', async (context) => {
+  const originalFetch = globalThis.fetch;
+  context.after(() => { globalThis.fetch = originalFetch; });
+  const calls = [];
+  let updateAttempts = 0;
+  globalThis.fetch = async (input, options = {}) => {
+    const url = new URL(typeof input === 'string' ? input : input.url);
+    const method = options.method || 'GET';
+    const body = options.body ? JSON.parse(options.body) : null;
+    calls.push({ method, path: url.pathname, body });
+    const response = (value, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
+    if (url.pathname.endsWith('/contents/projects/identity-project.json') && method === 'GET') return response({ sha: 'private-project-sha', content: toBase64(JSON.stringify(baseProject)) });
+    if (url.pathname.includes('/contents/media/')) return response({ sha: 'private-media-sha', content: toBase64('image-bytes') });
+    if (url.pathname.endsWith('/git/ref/heads/main') && method === 'GET') return response({ object: { sha: `parent-${updateAttempts}` } });
+    if (url.pathname.includes('/git/commits/parent-')) return response({ tree: { sha: 'parent-tree' } });
+    if (url.pathname.endsWith('/git/blobs')) return response({ sha: `blob-${calls.filter((call) => call.path.endsWith('/git/blobs')).length}` }, 201);
+    if (url.pathname.endsWith('/git/trees')) return response({ sha: 'new-tree' }, 201);
+    if (url.pathname.endsWith('/git/commits')) return response({ sha: `new-commit-${updateAttempts}` }, 201);
+    if (url.pathname.endsWith('/git/refs/heads/main') && method === 'PATCH') {
+      updateAttempts += 1;
+      return updateAttempts === 1 ? response({ message: 'Update is not a fast forward' }, 422) : response({ object: { sha: 'new-commit-1' } });
+    }
+    if (url.pathname.endsWith('/contents/projects/identity-project.json') && method === 'PUT') return response({ content: { sha: 'updated' } });
+    return response({ message: `Unexpected mock request: ${url.pathname}` }, 500);
+  };
+  const response = await worker.fetch(await authenticatedRequest('/api/publish', { method: 'POST', body: JSON.stringify({ slug: baseProject.slug, published: true }) }), env);
+  assert.equal(response.status, 200, await response.text());
+  assert.equal(updateAttempts, 2);
+});
+
 test('saving stops on a genuine competing edit and retains the other session draft', async (context) => {
   const originalFetch = globalThis.fetch;
   context.after(() => { globalThis.fetch = originalFetch; });

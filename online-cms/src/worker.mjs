@@ -241,7 +241,7 @@ async function publicCommit(env, token, project) {
   });
   tree.push({ path: `content/projects/${project.slug}.json`, mode: '100644', type: 'blob', sha: projectBlob.sha });
   if (project.published) {
-    const assets = [...new Set([project.cover_image, ...project.sections.flatMap((section) => section.assets)])].filter((asset) => asset.startsWith('/media/'));
+    const assets = [...new Set([project.cover_image, ...project.sections.flatMap((section) => section.assets)])].filter((asset) => typeof asset === 'string' && asset.startsWith('/media/'));
     for (const publicPath of assets) {
       const filename = publicPath.split('/').pop();
       const privateFile = await getContent(env, token, env.CONTENT_REPO, `media/${filename}`);
@@ -261,6 +261,18 @@ async function publicCommit(env, token, project) {
     method: 'PATCH', body: JSON.stringify({ sha: commit.sha, force: false }),
   });
   return commit.sha;
+}
+
+async function publicCommitWithRetry(env, token, project, attempts = 3) {
+  let lastError;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try { return await publicCommit(env, token, project); }
+    catch (error) {
+      lastError = error;
+      if (!(error instanceof HttpError) || ![409, 422, 502].includes(error.githubStatus ?? error.status)) throw error;
+    }
+  }
+  throw new HttpError(409, 'Another publication is being finalized. Your draft is safe. Please wait a moment, refresh the CMS, and try publishing again.');
 }
 
 async function sessionFor(request, env) {
@@ -355,9 +367,15 @@ async function handleApi(request, env, url) {
     const projectFile = await getContent(env, session.token, env.CONTENT_REPO, `projects/${body.slug}.json`);
     const project = validateProject(JSON.parse(decode(base64ToBytes(projectFile.content))), { requireMedia: Boolean(body.published) });
     project.published = Boolean(body.published);
-    await publicCommit(env, session.token, project);
-    await putContent(env, session.token, env.CONTENT_REPO, `projects/${project.slug}.json`, encode(JSON.stringify(project, null, 2) + '\n'), `CMS: Mark ${project.published ? 'published' : 'unpublished'} ${project.slug}`);
-    return json({ message: project.published ? 'Published. GitHub Pages is rebuilding the portfolio.' : 'Unpublished. GitHub Pages is rebuilding the portfolio.', deploymentUrl: `https://github.com/${env.GITHUB_OWNER}/${env.SITE_REPO}/actions/workflows/pages.yml` });
+    await publicCommitWithRetry(env, session.token, project);
+    let warning = '';
+    try {
+      await putContent(env, session.token, env.CONTENT_REPO, `projects/${project.slug}.json`, encode(JSON.stringify(project, null, 2) + '\n'), `CMS: Mark ${project.published ? 'published' : 'unpublished'} ${project.slug}`);
+    } catch (error) {
+      console.error('Public repository updated but private publication status did not sync.', error);
+      warning = ' The website update was sent successfully, but the private status could not be synchronized. Refresh before retrying.';
+    }
+    return json({ message: `${project.published ? 'Published' : 'Unpublished'}. GitHub Pages is rebuilding the portfolio.${warning}`, deploymentUrl: `https://github.com/${env.GITHUB_OWNER}/${env.SITE_REPO}/actions/workflows/pages.yml`, warning: Boolean(warning) });
   }
   throw new HttpError(404, 'Not found.');
 }

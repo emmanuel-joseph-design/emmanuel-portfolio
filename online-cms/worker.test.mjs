@@ -38,6 +38,12 @@ test('project validation protects media paths and types', () => {
   assert.throws(() => validateProject({ ...baseProject, slug: '../escape' }));
   assert.throws(() => validateProject({ ...baseProject, cover_image: '/media/cms/../../secret.png' }));
   assert.throws(() => validateProject({ ...baseProject, sections: [{ type: 'video', assets: [baseProject.cover_image] }] }));
+  assert.equal(validateProject({ ...baseProject, sections: [{ type: 'video', assets: ['https://vimeo.com/123456789'] }] }).sections[0].assets[0], 'https://player.vimeo.com/video/123456789');
+  const mixed = validateProject({ ...baseProject, sections: [{ type: 'double-image', assets: [baseProject.cover_image, 'https://vimeo.com/123456789'] }] }).sections[0];
+  assert.deepEqual(mixed.assets, [baseProject.cover_image, 'https://player.vimeo.com/video/123456789']);
+  assert.throws(() => validateProject({ ...baseProject, sections: [{ type: 'double-image', assets: [baseProject.cover_image, 'https://evil.example/video'] }] }));
+  assert.throws(() => validateProject({ ...baseProject, sections: [{ type: 'full-image', assets: ['https://vimeo.com/123456789'] }] }));
+  assert.throws(() => validateProject({ ...baseProject, sections: [{ type: 'video', assets: ['https://evil.example/video'] }] }));
   assert.throws(() => validateProject({ ...baseProject, cover_image: '' }, { requireMedia: true }));
 });
 

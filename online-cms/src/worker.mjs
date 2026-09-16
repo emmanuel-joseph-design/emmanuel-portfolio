@@ -81,6 +81,25 @@ function mediaPath(value, required = false) {
   return value;
 }
 
+export function videoSource(value, required = false) {
+  if (!value && !required) return '';
+  if (typeof value !== 'string') throw new HttpError(400, 'Enter a valid YouTube or Vimeo link.');
+  if (/^\/media\/cms\/[a-zA-Z0-9-]+\.(?:mp4|webm)$/.test(value)) return value;
+  let url;
+  try { url = new URL(value); } catch { throw new HttpError(400, 'Enter a valid YouTube or Vimeo link.'); }
+  const host = url.hostname.toLowerCase().replace(/^www\./, '');
+  let id = '';
+  if (host === 'youtu.be') id = url.pathname.split('/').filter(Boolean)[0] || '';
+  if (['youtube.com', 'm.youtube.com', 'youtube-nocookie.com'].includes(host)) {
+    id = url.searchParams.get('v') || url.pathname.match(/^\/(?:embed|shorts)\/([a-zA-Z0-9_-]+)/)?.[1] || '';
+  }
+  if (/^[a-zA-Z0-9_-]{6,20}$/.test(id)) return `https://www.youtube-nocookie.com/embed/${id}`;
+  if (host === 'vimeo.com') id = url.pathname.split('/').filter(Boolean)[0] || '';
+  if (host === 'player.vimeo.com') id = url.pathname.match(/^\/video\/(\d+)/)?.[1] || '';
+  if (/^\d+$/.test(id)) return `https://player.vimeo.com/video/${id}`;
+  throw new HttpError(400, 'Use a valid YouTube or Vimeo video link.');
+}
+
 export function validateProject(value, { requireMedia = false } = {}) {
   if (!value || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.slug || '') || value.slug.length > 100) throw new HttpError(400, 'Choose a URL name using lowercase letters, numbers, and hyphens.');
   if (typeof value.title !== 'string' || !value.title.trim()) throw new HttpError(400, 'Enter a project title.');
@@ -104,10 +123,11 @@ export function validateProject(value, { requireMedia = false } = {}) {
       if (!['full-image', 'double-image', 'video'].includes(section?.type)) throw new HttpError(400, 'Choose a valid gallery section type.');
       const expected = section.type === 'double-image' ? 2 : 1;
       if (!Array.isArray(section.assets) || section.assets.length !== expected) throw new HttpError(400, 'A gallery section has the wrong number of files.');
-      const assets = section.assets.map((asset) => mediaPath(asset, requireMedia));
+      const assets = section.assets.map((asset) => section.type === 'video' || (section.type === 'double-image' && typeof asset === 'string' && /^https?:\/\//.test(asset)) ? videoSource(asset, requireMedia) : mediaPath(asset, requireMedia));
       for (const asset of assets.filter(Boolean)) {
-        const isVideo = MEDIA_TYPES[extension(asset)].startsWith('video/');
-        if (isVideo !== (section.type === 'video')) throw new HttpError(400, 'Choose the correct image or video type for each section.');
+        const embedded = asset.startsWith('https://');
+        const localVideo = MEDIA_TYPES[extension(asset)]?.startsWith('video/');
+        if (section.type === 'video' ? !(embedded || localVideo) : section.type === 'double-image' ? localVideo : embedded || localVideo) throw new HttpError(400, 'Choose the correct image or video type for each section.');
       }
       return { id: String(section.id || crypto.randomUUID()), type: section.type, assets, order };
     }),
@@ -187,14 +207,14 @@ async function readPrivateMedia(env, token, publicPath) {
 async function publicCommit(env, token, project) {
   const ref = await github(env, token, repositoryEndpoint(env, env.SITE_REPO, '/git/ref/heads/main'));
   const parent = await github(env, token, repositoryEndpoint(env, env.SITE_REPO, `/git/commits/${ref.object.sha}`));
-  const published = { ...project, id: project.slug, published: Boolean(project.published) };
+  const published = { ...validateProject(project), id: project.slug, published: Boolean(project.published) };
   const tree = [];
   const projectBlob = await github(env, token, repositoryEndpoint(env, env.SITE_REPO, '/git/blobs'), {
     method: 'POST', body: JSON.stringify({ content: JSON.stringify(published, null, 2) + '\n', encoding: 'utf-8' }),
   });
   tree.push({ path: `content/projects/${project.slug}.json`, mode: '100644', type: 'blob', sha: projectBlob.sha });
   if (project.published) {
-    const assets = [...new Set([project.cover_image, ...project.sections.flatMap((section) => section.assets)])];
+    const assets = [...new Set([project.cover_image, ...project.sections.flatMap((section) => section.assets)])].filter((asset) => asset.startsWith('/media/'));
     for (const publicPath of assets) {
       const filename = publicPath.split('/').pop();
       const privateFile = await getContent(env, token, env.CONTENT_REPO, `media/${filename}`);
@@ -239,7 +259,7 @@ function securityHeaders(headers) {
   headers.set('x-content-type-options', 'nosniff');
   headers.set('referrer-policy', 'no-referrer');
   headers.set('permissions-policy', 'camera=(), microphone=(), geolocation=()');
-  headers.set('content-security-policy', "default-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' blob:; media-src 'self' blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'self' https://github.com");
+  headers.set('content-security-policy', "default-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' blob:; media-src 'self' blob:; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'self' https://github.com");
   return headers;
 }
 
@@ -294,9 +314,9 @@ async function handleApi(request, env, url) {
   }
   if (url.pathname === '/api/upload') {
     const ext = extension(String(body.name || ''));
-    if (!MEDIA_TYPES[ext] || typeof body.data !== 'string') throw new HttpError(400, 'Use JPG, PNG, WebP, GIF, MP4, or WebM files.');
+    if (!MEDIA_TYPES[ext]?.startsWith('image/') || typeof body.data !== 'string') throw new HttpError(400, 'Use JPG, PNG, WebP, or GIF image files. Add videos by pasting a YouTube or Vimeo link.');
     const bytes = base64ToBytes(body.data);
-    const limit = MEDIA_TYPES[ext].startsWith('video/') ? 20 : 10;
+    const limit = 10;
     if (!bytes.length || bytes.length > limit * 1024 * 1024) throw new HttpError(413, `The file must be smaller than ${limit} MB.`);
     if (!validUpload(bytes, ext)) throw new HttpError(400, 'This file does not match its image or video extension.');
     const filename = `${crypto.randomUUID()}${ext}`;

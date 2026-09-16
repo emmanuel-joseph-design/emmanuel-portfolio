@@ -15,10 +15,18 @@ export function getProjects(): Project[] {
     for (const section of project.sections) {
       const count = section.type === 'double-image' ? 2 : 1;
       if (!['full-image', 'double-image', 'video'].includes(section.type) || !Array.isArray(section.assets) || section.assets.length !== count) fail('Invalid gallery section.');
+      for (const asset of section.assets) {
+        const embeddedVideo = /^https:\/\/(?:www\.youtube-nocookie\.com\/embed\/[a-zA-Z0-9_-]{6,20}|player\.vimeo\.com\/video\/\d+)$/.test(asset);
+        const localVideo = /^\/media\/cms\/.+\.(?:mp4|webm)$/.test(asset);
+        const remote = asset.startsWith('https://');
+        if (section.type === 'video' ? !(embeddedVideo || localVideo) : section.type === 'double-image' ? localVideo || (remote && !embeddedVideo) : remote || localVideo) fail('Invalid gallery media type.');
+      }
     }
     if (project.published) {
       for (const asset of [project.cover_image, ...project.sections.flatMap((section) => section.assets)]) {
-        if (!asset || !asset.startsWith('/media/') || asset.includes('..') || !existsSync(path.join(process.cwd(), 'public', asset))) fail(`Missing local media: ${asset}`);
+        if (!asset) fail('Published media cannot be empty.');
+        if (asset.startsWith('https://')) continue;
+        if (!asset.startsWith('/media/') || asset.includes('..') || !existsSync(path.join(process.cwd(), 'public', asset))) fail(`Missing local media: ${asset}`);
       }
     }
     return { ...project, id: project.slug, order: project.order ?? 0 };

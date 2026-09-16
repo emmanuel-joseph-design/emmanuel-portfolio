@@ -7,6 +7,7 @@ let locked = false;
 let uploads = 0;
 let projects = [];
 const token = document.querySelector('meta[name="cms-token"]').content;
+const embedUrl = (value) => { try { const url=new URL(value);const host=url.hostname.toLowerCase().replace(/^www\./,'');let id=host==='youtu.be'?url.pathname.split('/').filter(Boolean)[0]:'';if(['youtube.com','m.youtube.com','youtube-nocookie.com'].includes(host))id=url.searchParams.get('v')||url.pathname.match(/^\/(?:embed|shorts)\/([a-zA-Z0-9_-]+)/)?.[1]||'';if(/^[a-zA-Z0-9_-]{6,20}$/.test(id||''))return `https://www.youtube-nocookie.com/embed/${id}`;if(host==='vimeo.com')id=url.pathname.split('/').filter(Boolean)[0];if(host==='player.vimeo.com')id=url.pathname.match(/^\/video\/(\d+)/)?.[1]||'';if(/^\d+$/.test(id||''))return `https://player.vimeo.com/video/${id}`;}catch{}return ''; };
 const notice = (message, error = false) => { $('notice').hidden = false; $('notice').textContent = message; $('notice').className = error ? 'error' : ''; };
 async function api(route, body) {
   const response = await fetch(`/api/${route}`, body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CMS-Token': token }, body: JSON.stringify(body) });
@@ -83,6 +84,8 @@ function uploadZone(current, video, onUploaded) {
   zone.ondrop = (event) => { event.preventDefault(); zone.classList.remove('drag'); upload(event.dataTransfer.files[0]); };
   return zone;
 }
+function videoLinkField(current,onChanged,onCommit=renderMedia){const zone=element('div','','upload');const source=embedUrl(current);if(source){const frame=element('iframe','','preview-media');frame.src=source;frame.title='Embedded video preview';frame.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';frame.allowFullscreen=true;frame.style.aspectRatio='16 / 9';frame.style.border='0';zone.append(frame);}zone.append(element('span',current?'Replace the video link':'Paste a YouTube or Vimeo video link'));const input=document.createElement('input');input.type='url';input.placeholder='https://www.youtube.com/watch?v=…';input.value=current||'';input.setAttribute('aria-label','YouTube or Vimeo video link');input.oninput=()=>{onChanged(input.value.trim());changed();};input.onchange=onCommit;zone.append(input,element('small','The video stays hosted on YouTube or Vimeo · displayed at 16:9'));return zone;}
+function doubleMediaField(current,onChanged,index){const slot=element('div','','media-choice');slot.style.cssText='display:grid;align-content:start;gap:10px';const label=element('label');label.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:700';label.append(element('span',`Slot ${index+1} media`));const select=document.createElement('select');select.style.cssText='border:1px solid var(--line);border-radius:6px;padding:8px;color:var(--purple);background:white;font:600 12px Inter,Arial,sans-serif';select.setAttribute('aria-label',`Slot ${index+1} media type`);select.append(new Option('Image','image'),new Option('Embedded video','embed'));select.value=embedUrl(current)?'embed':'image';let field=select.value==='embed'?videoLinkField(current,onChanged,()=>{}):uploadZone(current,false,onChanged);select.onchange=()=>{onChanged('');changed();const next=select.value==='embed'?videoLinkField('',onChanged,()=>{}):uploadZone('',false,onChanged);field.replaceWith(next);field=next;};label.append(select);slot.append(label,field);return slot;}
 function renderMedia() {
   $('cover').replaceChildren(uploadZone(project.cover_image,false,(url) => { project.cover_image=url; }));
   $('sections').replaceChildren();
@@ -95,7 +98,7 @@ function renderMedia() {
       ['×','Remove section',() => { project.sections.splice(index,1); }],
     ]) { const button=element('button',label,'outline'); button.type='button'; button.setAttribute('aria-label',title); button.onclick=()=>{ action(); changed(); renderMedia(); }; controls.append(button); }
     head.append(controls); block.append(head); const group=element('div','',section.type==='double-image'?'pair':'');
-    section.assets.forEach((asset,i)=>group.append(uploadZone(asset,section.type==='video',(url)=>{section.assets[i]=url;})));
+    section.assets.forEach((asset,i)=>group.append(section.type==='video'?videoLinkField(asset,(url)=>{section.assets[i]=url;}):section.type==='double-image'?doubleMediaField(asset,(url)=>{section.assets[i]=url;},i):uploadZone(asset,false,(url)=>{section.assets[i]=url;})));
     block.append(group); $('sections').append(block);
   });
 }
@@ -111,7 +114,7 @@ function preview() {
   article.append(element('h1',p.title || 'Untitled project'));
   if(p.cover_image){const cover=element('img','','preview-cover');cover.src=p.cover_image;cover.alt=p.title;article.append(cover);}
   const info=element('div','','preview-info'); info.append(element('p',p.description),element('p',`${p.client}\n${p.role}\n${p.year} · ${p.categories.join(', ')}`));article.append(info);
-  for(const section of p.sections){const group=element('div','',section.type==='double-image'?'pair':'');for(const asset of section.assets.filter(Boolean)){const media=element(section.type==='video'?'video':'img','','preview-media');media.src=asset;if(section.type==='video')media.controls=true;else media.alt='Project image';group.append(media);}article.append(group);}
+  for(const section of p.sections){const group=element('div','',section.type==='double-image'?'pair':'');for(const asset of section.assets.filter(Boolean)){const embedded=embedUrl(asset);const media=element(embedded?'iframe':section.type==='video'?'video':'img','','preview-media');media.src=embedded||asset;if(embedded){media.title='Embedded project video';media.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';media.allowFullscreen=true;media.style.aspectRatio='16 / 9';media.style.border='0';}else if(section.type==='video')media.controls=true;else media.alt='Project image';group.append(media);}article.append(group);}
   article.append(element('p',p.credits,'preview-credits'));$('preview-dialog').showModal();
 }
 async function publishing(published) {

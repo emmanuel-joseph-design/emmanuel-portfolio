@@ -46,7 +46,15 @@ export default function MediaGallery({ sections }: { sections: Section[] }) {
                     background: 'var(--lavender)',
                   }}
                 >
-                  {section.assets[i] ? (
+                  {section.assets[i]?.startsWith('https://') ? (
+                    <iframe
+                      src={section.assets[i]}
+                      title={`Project video ${i + 1}`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      style={{ width: '100%', aspectRatio: '16 / 9', display: 'block', border: 0 }}
+                    />
+                  ) : section.assets[i] ? (
                     <img
                       src={assetPath(section.assets[i])}
                       alt=""
@@ -69,7 +77,15 @@ export default function MediaGallery({ sections }: { sections: Section[] }) {
                 background: '#000',
               }}
             >
-              {section.assets[0] ? (
+              {section.assets[0]?.startsWith('https://') ? (
+                <iframe
+                  src={section.assets[0]}
+                  title="Project video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  style={{ width: '100%', aspectRatio: '16 / 9', display: 'block', border: 0 }}
+                />
+              ) : section.assets[0] ? (
                 <video
                   src={assetPath(section.assets[0])}
                   controls

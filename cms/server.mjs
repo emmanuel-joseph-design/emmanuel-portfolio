@@ -14,6 +14,23 @@ const exists = async (file) => { try { await fs.access(file); return true; } cat
 const readJSON = async (file) => JSON.parse(await fs.readFile(file, 'utf8'));
 const atomicJSON = async (file, data) => { await fs.mkdir(path.dirname(file), { recursive: true }); await fs.writeFile(`${file}.tmp`, JSON.stringify(data, null, 2) + '\n'); await fs.rename(`${file}.tmp`, file); };
 
+export function videoSource(value, required = false) {
+  if (!value && !required) return '';
+  if (typeof value !== 'string') throw new Error('Enter a valid YouTube or Vimeo link.');
+  if (/^\/media\/cms\/[a-zA-Z0-9-]+\.(?:mp4|webm)$/.test(value)) return value;
+  let url;
+  try { url = new URL(value); } catch { throw new Error('Enter a valid YouTube or Vimeo link.'); }
+  const host = url.hostname.toLowerCase().replace(/^www\./, '');
+  let id = '';
+  if (host === 'youtu.be') id = url.pathname.split('/').filter(Boolean)[0] || '';
+  if (['youtube.com', 'm.youtube.com', 'youtube-nocookie.com'].includes(host)) id = url.searchParams.get('v') || url.pathname.match(/^\/(?:embed|shorts)\/([a-zA-Z0-9_-]+)/)?.[1] || '';
+  if (/^[a-zA-Z0-9_-]{6,20}$/.test(id)) return `https://www.youtube-nocookie.com/embed/${id}`;
+  if (host === 'vimeo.com') id = url.pathname.split('/').filter(Boolean)[0] || '';
+  if (host === 'player.vimeo.com') id = url.pathname.match(/^\/video\/(\d+)/)?.[1] || '';
+  if (/^\d+$/.test(id)) return `https://player.vimeo.com/video/${id}`;
+  throw new Error('Use a valid YouTube or Vimeo video link.');
+}
+
 export function validateProject(value) {
   if (!value || !slugPattern.test(value.slug) || value.slug.length > 100) throw new Error('Choose a URL name using lowercase letters, numbers and hyphens.');
   if (typeof value.title !== 'string' || !value.title.trim()) throw new Error('Enter a project title.');
@@ -33,8 +50,15 @@ export function validateProject(value) {
     published: false,
     sections: value.sections.map((s, order) => {
       if (!['full-image', 'double-image', 'video'].includes(s.type) || !Array.isArray(s.assets) || s.assets.length !== (s.type === 'double-image' ? 2 : 1)) throw new Error('Invalid gallery section.');
-      const assets = s.assets.map(media);
-      if (assets.some((asset) => asset && (mime[path.extname(asset).toLowerCase()].startsWith('video/') !== (s.type === 'video')))) throw new Error('Choose the correct media type for this section.');
+      const assets = s.assets.map((asset) => s.type === 'video' || (s.type === 'double-image' && typeof asset === 'string' && /^https?:\/\//.test(asset)) ? videoSource(asset) : media(asset));
+      if (assets.some((asset) => {
+        if (!asset) return false;
+        const embedded = asset.startsWith('https://');
+        const localVideo = mime[path.extname(asset).toLowerCase()]?.startsWith('video/');
+        if (s.type === 'video') return !(embedded || localVideo);
+        if (s.type === 'double-image') return localVideo;
+        return embedded || localVideo;
+      })) throw new Error('Choose the correct media type for this section.');
       return { id: String(s.id || randomUUID()), type: s.type, assets, order };
     }),
   };
@@ -91,7 +115,7 @@ export async function createCMS({ root = path.dirname(here), allowPublish = true
       const assets = [...new Set([project.cover_image, ...project.sections.flatMap((s) => s.assets)])];
       if (published && assets.some((a) => !a)) throw new Error('Add a cover and fill every gallery upload before publishing.');
       const files = [relative];
-      for (const url of assets.filter(Boolean)) {
+      for (const url of assets.filter((asset) => asset && asset.startsWith('/media/'))) {
         if (!await exists(await assetFile(url))) throw new Error(`Missing media: ${url}`);
         if (url.startsWith('/media/cms/')) files.push(`public${url}`);
       }
@@ -131,7 +155,7 @@ export async function createCMS({ root = path.dirname(here), allowPublish = true
     } finally { busy = false; }
   };
   const server = http.createServer(async (req, res) => {
-    const send = (status, body, type = 'application/json') => { res.writeHead(status, { 'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'" }); res.end(type === 'application/json' ? JSON.stringify(body) : body); };
+    const send = (status, body, type = 'application/json') => { res.writeHead(status, { 'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; media-src 'self' blob:; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'" }); res.end(type === 'application/json' ? JSON.stringify(body) : body); };
     try {
       const host = `127.0.0.1:${server.address().port}`;
       if (req.headers.host !== host) return send(403, { error: 'Open the editor using its 127.0.0.1 address.' });
@@ -158,9 +182,9 @@ export async function createCMS({ root = path.dirname(here), allowPublish = true
       }
       if (url.pathname === '/api/upload') {
         const ext = path.extname(String(body.name)).toLowerCase();
-        if (!mime[ext] || typeof body.data !== 'string') throw new Error('Use JPG, PNG, WebP, GIF, MP4 or WebM files.');
+        if (!mime[ext]?.startsWith('image/') || typeof body.data !== 'string') throw new Error('Use JPG, PNG, WebP or GIF image files. Add videos by pasting a YouTube or Vimeo link.');
         const data = Buffer.from(body.data, 'base64');
-        const limit = mime[ext].startsWith('video') ? 20 : 10;
+        const limit = 10;
         if (!data.length || data.length > limit * 1024 * 1024) throw new Error(`File must be smaller than ${limit} MB.`);
         const signature = ext === '.png' ? data.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) : ['.jpg','.jpeg'].includes(ext) ? data[0] === 255 && data[1] === 216 && data[2] === 255 : ext === '.gif' ? /^GIF8[79]a/.test(data.toString('ascii',0,6)) : ext === '.webp' ? data.toString('ascii',0,4) === 'RIFF' && data.toString('ascii',8,12) === 'WEBP' : ext === '.mp4' ? data.toString('ascii',4,8) === 'ftyp' : data.subarray(0,4).equals(Buffer.from([26,69,223,163]));
         if (!signature) throw new Error('This file does not match its image or video extension.');

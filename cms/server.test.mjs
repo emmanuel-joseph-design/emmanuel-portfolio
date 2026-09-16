@@ -41,6 +41,12 @@ test('local CMS keeps drafts private, restricts requests, and validates uploads'
 test('validation rejects traversal and incorrect gallery media types',()=>{
   assert.throws(()=>validateProject({...project,cover_image:'/media/../../secret.png'}));
   assert.throws(()=>validateProject({...project,sections:[{type:'video',assets:['/media/image.png']}]}));
+  assert.equal(validateProject({...project,sections:[{type:'video',assets:['https://youtu.be/dQw4w9WgXcQ']}]}).sections[0].assets[0],'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ');
+  const mixed=validateProject({...project,sections:[{type:'double-image',assets:['/media/image.png','https://youtu.be/dQw4w9WgXcQ']}]}).sections[0];
+  assert.deepEqual(mixed.assets,['/media/image.png','https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ']);
+  assert.throws(()=>validateProject({...project,sections:[{type:'double-image',assets:['/media/image.png','https://evil.example/video']}]}));
+  assert.throws(()=>validateProject({...project,sections:[{type:'full-image',assets:['https://youtu.be/dQw4w9WgXcQ']}]}));
+  assert.throws(()=>validateProject({...project,sections:[{type:'video',assets:['https://evil.example/video']}]}));
   assert.throws(()=>validateProject({...project,categories:['Unknown']}));
   assert.equal(validateProject({...project,title:'  Brand work  '}).title,'Brand work');
 });

@@ -168,7 +168,9 @@ async function github(env, token, endpoint, options = {}) {
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
     const message = response.status === 404 ? 'The CMS cannot access the required repository. Check the GitHub App installation.' : body.message || `GitHub request failed (${response.status}).`;
-    throw new HttpError(response.status === 404 ? 503 : 502, message);
+    const error = new HttpError(response.status === 404 ? 503 : 502, message);
+    error.githubStatus = response.status;
+    throw error;
   }
   return body;
 }
@@ -176,21 +178,37 @@ async function github(env, token, endpoint, options = {}) {
 const repositoryEndpoint = (env, repo, endpoint = '') => `/repos/${env.GITHUB_OWNER}/${repo}${endpoint}`;
 const contentEndpoint = (env, repo, path) => repositoryEndpoint(env, repo, `/contents/${path.split('/').map(encodeURIComponent).join('/')}`);
 
-async function getContent(env, token, repo, path) {
-  return github(env, token, `${contentEndpoint(env, repo, path)}?ref=main`);
+async function getContent(env, token, repo, path, fresh = false) {
+  const refresh = fresh ? `&_cms_read=${crypto.randomUUID()}` : '';
+  return github(env, token, `${contentEndpoint(env, repo, path)}?ref=main${refresh}`, {
+    cache: 'no-store', headers: { 'cache-control': 'no-cache' },
+  });
 }
 
-async function maybeContent(env, token, repo, path) {
-  try { return await getContent(env, token, repo, path); }
+async function maybeContent(env, token, repo, path, fresh = false) {
+  try { return await getContent(env, token, repo, path, fresh); }
   catch (error) { if (error instanceof HttpError && error.status === 503) return null; throw error; }
 }
 
-async function putContent(env, token, repo, path, bytes, message) {
-  const existing = await maybeContent(env, token, repo, path);
-  return github(env, token, contentEndpoint(env, repo, path), {
-    method: 'PUT',
-    body: JSON.stringify({ message, content: bytesToBase64(bytes), branch: 'main', ...(existing?.sha ? { sha: existing.sha } : {}) }),
-  });
+async function putContent(env, token, repo, path, bytes, message, expectedSha) {
+  const content = bytesToBase64(bytes);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const existing = await maybeContent(env, token, repo, path, true);
+    // A previous request may have succeeded even if its response was interrupted.
+    if (existing?.content?.replace(/\s/g, '') === content) return { content: { sha: existing.sha } };
+    if (expectedSha !== undefined && expectedSha !== (existing?.sha ?? null)) {
+      throw new HttpError(409, 'This draft changed in another tab or session. Your edits are still open and have not been overwritten. Keep a copy of your changes before reopening the latest draft.');
+    }
+    try {
+      return await github(env, token, contentEndpoint(env, repo, path), {
+        method: 'PUT',
+        body: JSON.stringify({ message, content, branch: 'main', ...(existing?.sha ? { sha: existing.sha } : {}) }),
+      });
+    } catch (error) {
+      if (!(error instanceof HttpError) || error.githubStatus !== 409) throw error;
+      if (attempt === 2) throw new HttpError(409, 'GitHub is receiving another update. Your edits are still open. Please try Save Draft again.');
+    }
+  }
 }
 
 async function listProjects(env, token) {
@@ -201,7 +219,7 @@ async function listProjects(env, token) {
   if (!Array.isArray(entries)) return [];
   const projects = await Promise.all(entries.filter((entry) => entry.type === 'file' && entry.name.endsWith('.json')).map(async (entry) => {
     const file = await getContent(env, token, env.CONTENT_REPO, `projects/${entry.name}`);
-    return JSON.parse(decode(base64ToBytes(file.content)));
+    return { ...JSON.parse(decode(base64ToBytes(file.content))), revision: file.sha };
   }));
   return projects.sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (b.year ?? 0) - (a.year ?? 0));
 }
@@ -318,8 +336,9 @@ async function handleApi(request, env, url) {
   const body = await requestJson(request);
   if (url.pathname === '/api/save') {
     const project = validateProject(body);
-    await putContent(env, session.token, env.CONTENT_REPO, `projects/${project.slug}.json`, encode(JSON.stringify(project, null, 2) + '\n'), `CMS: Save draft ${project.slug}`);
-    return json({ message: 'Draft saved privately on GitHub.' });
+    if (body.revision !== undefined && body.revision !== null && !/^[a-f0-9]{40}$/.test(body.revision)) throw new HttpError(400, 'Invalid draft revision.');
+    const saved = await putContent(env, session.token, env.CONTENT_REPO, `projects/${project.slug}.json`, encode(JSON.stringify(project, null, 2) + '\n'), `CMS: Save draft ${project.slug}`, body.revision);
+    return json({ message: 'Draft saved privately on GitHub.', revision: saved.content.sha });
   }
   if (url.pathname === '/api/upload') {
     const ext = extension(String(body.name || ''));

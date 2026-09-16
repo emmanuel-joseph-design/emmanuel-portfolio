@@ -9,6 +9,7 @@ let projects = [];
 let dirty = false;
 let locked = false;
 let uploads = 0;
+let saveInFlight = null;
 
 const notice = (message, error = false) => {
   $('notice').hidden = false;
@@ -73,6 +74,13 @@ function collect() {
 }
 
 async function save() {
+  if (saveInFlight) return saveInFlight;
+  saveInFlight = saveDraft();
+  try { return await saveInFlight; }
+  finally { saveInFlight = null; lock(false); }
+}
+
+async function saveDraft() {
   if (uploads) throw new Error('Wait for the uploads to finish.');
   if (!form.reportValidity()) throw new Error('Fill in the required project fields.');
   project = collect();
@@ -83,7 +91,12 @@ async function save() {
     while (projects.some((item) => item.slug === slug)) slug = `${base}-${suffix++}`;
     project.slug = slug;
   }
-  const result = await api('save', project);
+  lock(true);
+  $('save-state').textContent = 'Saving draft…';
+  let result;
+  try { result = await api('save', project); }
+  catch (error) { dirty = true; $('save-state').textContent = 'Not saved — your changes are still here'; throw error; }
+  project.revision = result.revision;
   dirty = false;
   $('save-state').textContent = result.message;
   return result;
@@ -237,7 +250,7 @@ function renderMedia() {
 
 function editProject(value) {
   project = structuredClone(value || {
-    slug: '', title: '', description: '', client: '', role: '', year: new Date().getFullYear(),
+    slug: '', revision: null, title: '', description: '', client: '', role: '', year: new Date().getFullYear(),
     order: 0, categories: [], cover_image: '', credits: 'Emmanuel Folusho Joseph', sections: [], published: false,
   });
   for (const key of ['title', 'description', 'client', 'role', 'year', 'order', 'credits']) form.elements[key].value = project[key];

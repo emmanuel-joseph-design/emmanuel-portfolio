@@ -86,3 +86,89 @@ test('publishing creates a public tree containing only the selected project asse
   ]);
   assert.equal(calls.filter((call) => call.method === 'PATCH' && call.path.endsWith('/git/refs/heads/main')).length, 1);
 });
+
+test('saving retries stale GitHub versions without changing the submitted draft', async (context) => {
+  const originalFetch = globalThis.fetch;
+  context.after(() => { globalThis.fetch = originalFetch; });
+  const writes = [];
+  const reads = [];
+  const firstSha = 'a'.repeat(40), latestSha = 'b'.repeat(40), savedSha = 'c'.repeat(40);
+  globalThis.fetch = async (input, options = {}) => {
+    const url = new URL(input);
+    const reply = (body, status = 200) => new Response(JSON.stringify(body), { status });
+    if ((options.method || 'GET') === 'GET') {
+      reads.push(url.searchParams.get('_cms_read'));
+      assert.equal(options.cache, 'no-store');
+      return reply({ sha: reads.length === 1 ? firstSha : latestSha, content: toBase64('previous draft') });
+    }
+    writes.push(JSON.parse(options.body));
+    return writes.length === 1 ? reply({ message: 'projects/identity-project.json does not match ' + firstSha }, 409) : reply({ content: { sha: savedSha } });
+  };
+  // An already-open editor from the previous deployment has no revision field.
+  const response = await worker.fetch(await authenticatedRequest('/api/save', { method: 'POST', body: JSON.stringify(baseProject) }), env);
+  const result = await response.json();
+  assert.equal(response.status, 200, JSON.stringify(result));
+  assert.equal(result.revision, savedSha);
+  assert.deepEqual(writes.map((write) => write.sha), [firstSha, latestSha]);
+  assert.equal(writes[0].content, writes[1].content);
+  assert.equal(new Set(reads).size, 2);
+});
+
+test('saving stops on a genuine competing edit and retains the other session draft', async (context) => {
+  const originalFetch = globalThis.fetch;
+  context.after(() => { globalThis.fetch = originalFetch; });
+  let reads = 0, writes = 0;
+  globalThis.fetch = async (_input, options = {}) => {
+    if ((options.method || 'GET') === 'GET') return new Response(JSON.stringify({ sha: (++reads === 1 ? 'a' : 'b').repeat(40), content: toBase64('another draft') }));
+    writes += 1;
+    return new Response(JSON.stringify({ message: 'sha mismatch' }), { status: 409 });
+  };
+  const response = await worker.fetch(await authenticatedRequest('/api/save', { method: 'POST', body: JSON.stringify({ ...baseProject, revision: 'a'.repeat(40) }) }), env);
+  assert.equal(response.status, 409);
+  assert.match((await response.json()).error, /another tab or session/);
+  assert.equal(writes, 1);
+});
+
+test('a repeated completed save succeeds without writing again', async (context) => {
+  const originalFetch = globalThis.fetch;
+  context.after(() => { globalThis.fetch = originalFetch; });
+  let writes = 0;
+  globalThis.fetch = async (_input, options = {}) => {
+    if (options.method === 'PUT') writes += 1;
+    return new Response(JSON.stringify({ sha: 'b'.repeat(40), content: toBase64(JSON.stringify(validateProject(baseProject), null, 2) + '\n') }));
+  };
+  const response = await worker.fetch(await authenticatedRequest('/api/save', { method: 'POST', body: JSON.stringify({ ...baseProject, revision: 'a'.repeat(40) }) }), env);
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).revision, 'b'.repeat(40));
+  assert.equal(writes, 0);
+});
+
+test('conflict retries are bounded and permission failures are not retried', async (context) => {
+  const originalFetch = globalThis.fetch;
+  context.after(() => { globalThis.fetch = originalFetch; });
+  for (const status of [409, 403]) {
+    let writes = 0;
+    globalThis.fetch = async (_input, options = {}) => {
+      if ((options.method || 'GET') === 'GET') return new Response(JSON.stringify({ sha: 'a'.repeat(40), content: toBase64('previous draft') }));
+      writes += 1;
+      return new Response(JSON.stringify({ message: 'GitHub write failed' }), { status });
+    };
+    const response = await worker.fetch(await authenticatedRequest('/api/save', { method: 'POST', body: JSON.stringify(baseProject) }), env);
+    assert.equal(response.status, status === 409 ? 409 : 502);
+    assert.equal(writes, status === 409 ? 3 : 1);
+    if (status === 409) assert.match((await response.json()).error, /edits are still open/);
+  }
+});
+
+test('a new project cannot overwrite a draft created by another editor', async (context) => {
+  const originalFetch = globalThis.fetch;
+  context.after(() => { globalThis.fetch = originalFetch; });
+  let writes = 0;
+  globalThis.fetch = async (_input, options = {}) => {
+    if (options.method === 'PUT') writes += 1;
+    return new Response(JSON.stringify({ sha: 'a'.repeat(40), content: toBase64('existing draft') }));
+  };
+  const response = await worker.fetch(await authenticatedRequest('/api/save', { method: 'POST', body: JSON.stringify({ ...baseProject, revision: null }) }), env);
+  assert.equal(response.status, 409);
+  assert.equal(writes, 0);
+});

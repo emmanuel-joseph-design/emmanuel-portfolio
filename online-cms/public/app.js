@@ -48,9 +48,34 @@ async function api(route, body) {
   if (!response.ok) {
     const error = new Error(result.error || 'The request failed.');
     error.status = response.status;
+    error.loginUrl = response.headers.get('x-cms-login');
     throw error;
   }
   return result;
+}
+
+async function refreshSignIn() {
+  const response = await fetch('/api/me');
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error('Finish signing in, then try again.');
+  csrf = result.csrf;
+  $('account').textContent = `@${result.login}`;
+  $('account').hidden = false;
+  $('site-link').href = result.siteUrl;
+  notice('Sign-in refreshed. Your edits are still here; retry Save Draft or Publish.');
+}
+
+function showError(error) {
+  notice(error.message, true);
+  if (!error.loginUrl) return;
+  const signIn = element('a', ' Sign in again ↗');
+  signIn.href = error.loginUrl;
+  signIn.target = '_blank';
+  signIn.rel = 'noopener';
+  const complete = element('button', "I've signed in", 'outline');
+  complete.type = 'button';
+  complete.onclick = () => refreshSignIn().catch(showError);
+  $('notice').append(signIn, document.createTextNode(' '), complete);
 }
 
 function changed() {
@@ -164,7 +189,7 @@ function uploadZone(current, video, onUploaded) {
       changed();
       renderMedia();
     } catch (error) {
-      notice(error.message, true);
+      showError(error);
       caption.textContent = 'Upload failed. Choose a file to retry.';
     } finally {
       uploads -= 1;
@@ -303,7 +328,7 @@ async function publish(published) {
     link.href = result.deploymentUrl; link.target = '_blank'; link.rel = 'noopener';
     $('notice').append(link);
   } catch (error) {
-    notice(error.message, true);
+    showError(error);
   } finally { lock(false); }
 }
 
@@ -311,7 +336,7 @@ form.oninput = changed;
 form.onsubmit = async (event) => {
   event.preventDefault();
   try { const result = await save(); notice(result.message); }
-  catch (error) { notice(error.message, true); }
+  catch (error) { showError(error); }
 };
 $('add').onclick = () => editProject();
 $('back').onclick = () => { if (!dirty || confirm('Leave without saving these changes?')) dashboard().catch((error) => notice(error.message, true)); };

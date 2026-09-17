@@ -1,0 +1,276 @@
+{
+  "slug": "tapnob",
+  "title": "Tapnob",
+  "description": "Tapnob is a Bitcoin payment platform designed to make it easier for people and businesses in Africa to use Bitcoin for everyday transactions.\n\nAs the founding designer, I developed the brand identity, visual system, product interface, and website. I also created marketing campaigns, social media assets, product documentation, and motion graphics to communicate the platform’s value clearly.\n\nThe goal was to make Bitcoin payments feel simple, trustworthy, and accessible while building a consistent brand experience across every touchpoint. The work helped position Tapnob as a credible Bitcoin payment solution and supported the company in securing its first grant.",
+  "client": "Tapnob",
+  "role": "Brand Designer",
+  "credits": "Emmanuel Folusho Joseph",
+  "year": 2025,
+  "order": 0,
+  "categories": [
+    "Brand",
+    "Marketing"
+  ],
+  "cover_image": "/media/cms/40762841-40ce-4c23-85a9-494aec57f720.jpg",
+  "published": true,
+  "sections": [
+    {
+      "id": "6c597286-e98e-4396-817c-a6690588b673",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1124671441"
+      ],
+      "order": 0
+    },
+    {
+      "id": "6a9f00fc-7586-4bb1-80d4-ebf8f84188ae",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/a7b86b27-5c11-4d95-8ad2-0ff8ca8206a4.webp",
+        "/media/cms/4bbbd935-e643-4851-abfb-9c1992682ec3.webp"
+      ],
+      "order": 1
+    },
+    {
+      "id": "51f5437c-302c-4c72-9950-4daf186db938",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/3e882e98-d374-4d98-aad9-5b6b56ab940b.webp"
+      ],
+      "order": 2
+    },
+    {
+      "id": "816851e3-20e0-4f9d-92f0-23bd08148ee2",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/c20b0294-da71-4a2d-9873-7e732ab3b1fc.webp",
+        "/media/cms/b00204e6-0399-452c-83f5-e9146d124076.webp"
+      ],
+      "order": 3
+    },
+    {
+      "id": "089efca0-d8f7-435a-ad3f-d5f255edd67d",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/b83e71d7-d1ba-4b42-8a3f-dc4e63e1f290.webp"
+      ],
+      "order": 4
+    },
+    {
+      "id": "67477578-0c75-4ad5-9f5a-18d4b09f852b",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/9a912879-8ce3-40a0-ad14-c2cb5e00bd2f.webp"
+      ],
+      "order": 5
+    },
+    {
+      "id": "aa519d76-d4bf-4378-987d-4a6b655d3397",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/0c2b5b59-71b8-4412-8f7b-634f588eee78.webp"
+      ],
+      "order": 6
+    },
+    {
+      "id": "0cd65130-8e67-4482-9b97-bf903d02789c",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/6b263fd0-9666-4a58-8841-b16965901c13.webp"
+      ],
+      "order": 7
+    },
+    {
+      "id": "6cf844b3-b0ad-4995-ab62-1ae58b17c55c",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/b02a7955-b950-48ee-b382-ad1584853e8b.webp"
+      ],
+      "order": 8
+    },
+    {
+      "id": "ddd81842-26be-4026-9e8d-be17576498c1",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/1d8911ef-1f58-4dfc-99d4-a5919f0ea129.webp"
+      ],
+      "order": 9
+    },
+    {
+      "id": "018bf57a-0111-4d6e-9e4f-818b446fdb20",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/317e2e54-5794-4bb8-8178-748139bf4b0e.webp"
+      ],
+      "order": 10
+    },
+    {
+      "id": "93b8703a-fefa-4e8d-af1e-856a5c2fc7d9",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/5049f597-8c81-48af-a626-448e492fc4a7.webp"
+      ],
+      "order": 11
+    },
+    {
+      "id": "f8f6bc8a-d30f-437a-9607-5a6cf785e280",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/3dd1c79a-23f8-4136-8e8c-b4bf76f5b792.webp",
+        "/media/cms/aab3e1b9-979d-468c-8455-fc6ad04bfbc0.webp"
+      ],
+      "order": 12
+    },
+    {
+      "id": "04c60e86-b8e0-4598-99a9-fffa169cf551",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/f4560265-f457-4bc4-9da7-d8954ed87a62.webp"
+      ],
+      "order": 13
+    },
+    {
+      "id": "7756c236-5f44-4dcf-b227-49d180d2abda",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/57fb2f4e-8692-45e3-a8a9-51b123c6c851.webp",
+        "/media/cms/6094acca-4e53-459a-b1ae-7fc402d1b0d3.webp"
+      ],
+      "order": 14
+    },
+    {
+      "id": "f056150d-c656-4a11-97d8-819df6f2d8f2",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/9239a949-c15a-419a-84a9-46937b811f76.webp"
+      ],
+      "order": 15
+    },
+    {
+      "id": "cacb280a-599c-4cfb-9fb4-ce95a3e6ec80",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/fe2d817c-1a64-433e-bf5b-e7a62b9be1c0.webp"
+      ],
+      "order": 16
+    },
+    {
+      "id": "9ebb7093-4235-4a59-b1a4-7b829d3192bf",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/a9347019-7817-4cff-a64c-72f91d26fd18.webp"
+      ],
+      "order": 17
+    },
+    {
+      "id": "b9c37a6c-5fa9-4c38-b1ba-bfa3c790a3ce",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/9636e28f-5009-434a-bfb5-213f4c190c37.webp",
+        "/media/cms/73c0eac2-60b0-4138-9aae-054946237f27.webp"
+      ],
+      "order": 18
+    },
+    {
+      "id": "d79425ad-3f75-4e04-9380-12bd82fa87e6",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/c1441c49-e0db-46f5-9391-f20b68026d88.webp"
+      ],
+      "order": 19
+    },
+    {
+      "id": "c595dff0-7fbc-4ef6-bdd8-ad729092fc67",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/9e623f67-413c-4541-b68b-f5472096c434.webp"
+      ],
+      "order": 20
+    },
+    {
+      "id": "9d369909-9dee-4e58-96c1-cef6058b87ed",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/8eaea70e-7732-4e99-9e77-f959f3029de0.webp"
+      ],
+      "order": 21
+    },
+    {
+      "id": "3f293e5f-7253-4af9-ac7f-709f34e3c809",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/da7dabe9-8eb5-4843-acd9-31b75e576765.webp"
+      ],
+      "order": 22
+    },
+    {
+      "id": "98934bed-b792-4743-824f-ff3b499fa133",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/5458c4d0-cff6-478a-845d-8d5d47295f30.webp",
+        "/media/cms/80beb860-e5d0-4636-b010-9fc0e2deeb3f.webp"
+      ],
+      "order": 23
+    },
+    {
+      "id": "3b90fab6-c3be-4db2-97e8-d06f196cbeaa",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/f4941ee2-f9bc-46dc-bc5f-be8747679eef.webp"
+      ],
+      "order": 24
+    },
+    {
+      "id": "18ac50e8-f954-416d-b71e-eeb35072b036",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/ac4d740c-878d-45c0-b2ae-d10bfc97050d.webp",
+        "/media/cms/1c4dfae0-dddb-4de7-b316-7283f3893f2a.webp"
+      ],
+      "order": 25
+    },
+    {
+      "id": "3432e9a3-79d3-4145-93a3-dd21a8c04cce",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/6e6903c7-fdd8-4bbf-8e45-501f5d7a50ce.webp"
+      ],
+      "order": 26
+    },
+    {
+      "id": "0c1b6457-af8d-4921-8799-b3dbef175766",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/072949b8-8c6a-4868-904d-d298a0c73f03.webp",
+        "/media/cms/1e443ae9-a2e6-4eda-bc3f-327b6d8a0d12.webp"
+      ],
+      "order": 27
+    },
+    {
+      "id": "f5e9f3c4-af59-4a77-a67e-32458eaa1052",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/a2d1b7c9-88f5-404d-9ac3-acb3c64a8131.webp"
+      ],
+      "order": 28
+    },
+    {
+      "id": "6836bcd9-aec5-4552-8f74-8d7ea2c3b186",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/94591f38-54ff-42ea-9090-276ac1b7a8c0.webp",
+        "/media/cms/0d88a9dc-9c7d-486e-b655-9175878a5f1b.webp"
+      ],
+      "order": 29
+    },
+    {
+      "id": "78d192b1-a730-4622-889f-fb10668b2354",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/d217d746-f0a3-4adb-8e87-68e543a2d9e1.webp"
+      ],
+      "order": 30
+    }
+  ],
+  "id": "tapnob"
+}

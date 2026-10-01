@@ -49,6 +49,11 @@ export function validateProject(value) {
     year: value.year, order: value.order, categories: [...new Set(value.categories)], cover_image: media(value.cover_image || ''),
     published: false,
     sections: value.sections.map((s, order) => {
+      if (s?.type === 'text') {
+        const heading = String(s.heading ?? '').trim().slice(0, 250);
+        const body = String(s.body ?? '').slice(0, 20000);
+        return { id: String(s.id || randomUUID()), type: 'text', heading, body, order };
+      }
       if (!['full-image', 'double-image', 'video'].includes(s.type) || !Array.isArray(s.assets) || s.assets.length !== (s.type === 'double-image' ? 2 : 1)) throw new Error('Invalid gallery section.');
       const assets = s.assets.map((asset) => s.type === 'video' || (s.type === 'double-image' && typeof asset === 'string' && /^https?:\/\//.test(asset)) ? videoSource(asset) : media(asset));
       if (assets.some((asset) => {
@@ -115,13 +120,14 @@ export async function createCMS({ root = path.dirname(here), allowPublish = true
       const p = (await list()).find((p) => p.slug === slug);
       if (!p) throw new Error('Save this project first.');
       const project = { ...validateProject(p), published };
+      if (published && project.sections.some((section) => section.type === 'text' && !section.body.trim())) throw new Error('Add a description to every text section before publishing.');
       const existing = [];
       for (const filename of (await fs.readdir(content)).filter((f) => f.endsWith('.json'))) {
         if ((await readJSON(path.join(content, filename))).slug === slug) existing.push(filename);
       }
       if (existing.length > 1) throw new Error('Duplicate project URLs in content files.');
       const relative = `content/projects/${existing[0] || `${slug}.json`}`;
-      const assets = [...new Set([project.cover_image, ...project.sections.flatMap((s) => s.assets)])];
+      const assets = [...new Set([project.cover_image, ...project.sections.flatMap((section) => section.type === 'text' ? [] : section.assets)])];
       if (published && assets.some((a) => !a)) throw new Error('Add a cover and fill every gallery upload before publishing.');
       const files = [relative];
       for (const url of assets.filter((asset) => asset && asset.startsWith('/media/'))) {

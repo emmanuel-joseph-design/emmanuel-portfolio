@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useRef } from 'react';
 import { assetPath } from '@/lib/asset-path';
-import { Section } from '@/lib/types';
+import { MediaSection, Section, TextSection } from '@/lib/types';
 import { sizeGallery } from '@/online-cms/public/gallery-layout.js';
 import '@/online-cms/public/gallery-layout.css';
+import styles from './MediaGallery.module.css';
 
-function GallerySection({ section }: { section: Section }) {
+function GallerySection({ section }: { section: MediaSection }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (ref.current) return sizeGallery(ref.current, section);
@@ -26,6 +27,24 @@ function GallerySection({ section }: { section: Section }) {
     </div>
   );
 }
+
+function ProjectTextSection({ section }: { section: TextSection }) {
+  return (
+    <section className={styles.textSection}>
+      {section.heading && <h2>{section.heading}</h2>}
+      <p>{section.body}</p>
+    </section>
+  );
+}
+
 export default function MediaGallery({ sections }: { sections: Section[] }) {
-  return <div>{[...sections].sort((a, b) => a.order - b.order).map((section) => <GallerySection key={section.id} section={section} />)}</div>;
+  return (
+    <div>
+      {[...sections].sort((a, b) => a.order - b.order).map((section) => (
+        section.type === 'text'
+          ? <ProjectTextSection key={section.id} section={section} />
+          : <GallerySection key={section.id} section={section} />
+      ))}
+    </div>
+  );
 }

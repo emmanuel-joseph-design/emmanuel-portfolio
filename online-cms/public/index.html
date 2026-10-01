@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Emmanuel Joseph — Portfolio CMS</title>
   <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/text-section.css">
   <link rel="stylesheet" href="/gallery-layout.css"><script src="/app.js" type="module"></script>
 </head>
 <body>
@@ -41,7 +42,7 @@
         </div>
         <fieldset><legend>Categories</legend><div class="categories"><label><input type="checkbox" name="category" value="Brand"> Brand</label><label><input type="checkbox" name="category" value="Marketing"> Marketing</label><label><input type="checkbox" name="category" value="Product"> Product</label></div></fieldset>
         <fieldset><legend>Cover image</legend><div id="cover"></div></fieldset>
-        <fieldset><legend>Content sections</legend><p class="hint">Build your story with images and video. Use the arrows to change their order.</p><div id="sections"></div><div class="section-buttons"><button type="button" class="outline" data-section="full-image">+ Full image</button><button type="button" class="outline" data-section="double-image">+ Double image</button><button type="button" class="outline" data-section="video">+ Video</button></div></fieldset>
+        <fieldset><legend>Content sections</legend><p class="hint">Build your story with text, images, and video. Use the arrows to change their order.</p><div id="sections"></div><div class="section-buttons"><button type="button" class="outline" data-section="text">+ Text</button><button type="button" class="outline" data-section="full-image">+ Full image</button><button type="button" class="outline" data-section="double-image">+ Double image</button><button type="button" class="outline" data-section="video">+ Video</button></div></fieldset>
         <div class="actions"><button type="submit" class="outline" id="save">Save Draft</button><button type="button" class="outline" id="preview">Preview</button><button type="button" id="publish">Publish</button><button type="button" class="text-button" id="unpublish" hidden>Unpublish</button></div>
         <p class="hint">Save Draft stores changes in the private repository. Publish sends the finished project to the public portfolio.</p>
       </form>

@@ -13,6 +13,12 @@ export function getProjects(): Project[] {
     if (!Array.isArray(project.categories) || project.categories.some((category) => !['Brand', 'Marketing', 'Product'].includes(category))) fail('Invalid categories.');
     if (!Array.isArray(project.sections)) fail('Sections must be an array.');
     for (const section of project.sections) {
+      if (section.type === 'text') {
+        if (typeof section.heading !== 'string' || typeof section.body !== 'string') fail('Invalid text section.');
+        if (section.heading.length > 250 || section.body.length > 20000) fail('Text section is too long.');
+        if (project.published && !section.body.trim()) fail('Published text sections cannot be empty.');
+        continue;
+      }
       const count = section.type === 'double-image' ? 2 : 1;
       if (!['full-image', 'double-image', 'video'].includes(section.type) || !Array.isArray(section.assets) || section.assets.length !== count) fail('Invalid gallery section.');
       if (section.aspectRatio !== undefined && (typeof section.aspectRatio !== 'number' || !Number.isFinite(section.aspectRatio) || section.aspectRatio < 0.1 || section.aspectRatio > 10)) fail('Invalid media proportions.');
@@ -25,7 +31,8 @@ export function getProjects(): Project[] {
       }
     }
     if (project.published) {
-      for (const asset of [project.cover_image, ...project.sections.flatMap((section) => section.assets)]) {
+      const sectionAssets = project.sections.flatMap((section) => section.type === 'text' ? [] : section.assets);
+      for (const asset of [project.cover_image, ...sectionAssets]) {
         if (!asset) fail('Published media cannot be empty.');
         if (asset.startsWith('https://')) continue;
         if (!asset.startsWith('/media/') || asset.includes('..') || !existsSync(path.join(process.cwd(), 'public', asset))) fail(`Missing local media: ${asset}`);

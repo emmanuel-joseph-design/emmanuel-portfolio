@@ -1,14 +1,25 @@
 export type Category = 'Brand' | 'Marketing' | 'Product';
-export type SectionType = 'full-image' | 'double-image' | 'video';
+export type SectionType = 'full-image' | 'double-image' | 'video' | 'text';
 
-export interface Section {
+interface BaseSection {
   id: string;
-  type: SectionType;
-  assets: string[];
   order: number;
+}
+
+export interface MediaSection extends BaseSection {
+  type: Exclude<SectionType, 'text'>;
+  assets: string[];
   aspectRatio?: number;
   imageFit?: 'contain' | 'cover';
 }
+
+export interface TextSection extends BaseSection {
+  type: 'text';
+  heading: string;
+  body: string;
+}
+
+export type Section = MediaSection | TextSection;
 
 export interface Project {
   id: string;

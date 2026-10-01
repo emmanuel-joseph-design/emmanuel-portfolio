@@ -14,6 +14,110 @@ const baseProject = {
   published: false, sections: [{ id: 'one', type: 'full-image', assets: ['/media/cms/22222222-2222-4222-8222-222222222222.png'], order: 0 }],
 };
 const toBase64 = (value) => Buffer.from(value).toString('base64');
+
+function publishingFixture(context, { count = 40, failMedia = false } = {}) {
+  const assets = Array.from({ length: count }, (_, index) => `/media/cms/image-${index}.png`);
+  const project = { ...baseProject, cover_image: assets[0], sections: assets.slice(1).map((asset, index) => ({ id: String(index), type: 'full-image', assets: [asset] })) };
+  const calls = [];
+  const blobs = new Set();
+  let requests = 0;
+  const originalFetch = globalThis.fetch;
+  context.after(() => { globalThis.fetch = originalFetch; });
+  globalThis.fetch = async (input, options = {}) => {
+    if (++requests > 50) throw new Error('Too many subrequests.');
+    const url = new URL(input);
+    const method = options.method || 'GET';
+    const body = options.body ? JSON.parse(options.body) : null;
+    calls.push({ path: url.pathname, method, body });
+    const reply = (value, status = 200) => Response.json(value, { status });
+    if (url.pathname.endsWith('/contents/projects/identity-project.json')) return reply({ sha: 'draft-sha', content: toBase64(JSON.stringify(project)) });
+    if (url.pathname.includes('/contents/media/')) {
+      if (failMedia) return reply({ message: 'Media unavailable' }, 503);
+      const index = Number(url.pathname.match(/image-(\d+)/)[1]);
+      return reply({ sha: `media-${index}`, encoding: index === 0 ? 'none' : 'base64', content: index === 0 ? '' : toBase64(`image-${index}`) });
+    }
+    if (url.pathname.endsWith('/portfolio-content/git/blobs/media-0')) return reply({ encoding: 'base64', content: toBase64('image-0') });
+    if (url.pathname.endsWith('/git/blobs') && method === 'POST') {
+      const sha = body.encoding === 'base64' ? Buffer.from(body.content, 'base64').toString().replace('image-', 'media-') : 'project-blob';
+      blobs.add(sha);
+      return reply({ sha });
+    }
+    if (url.pathname.endsWith('/git/trees/main')) return reply({ tree: assets.map((asset, index) => ({ path: `media/${asset.split('/').pop()}`, type: 'blob', sha: `media-${index}` })) });
+    if (url.pathname.endsWith('/git/ref/heads/main')) return reply({ object: { sha: 'parent' } });
+    if (url.pathname.endsWith('/git/commits/parent')) return reply({ tree: { sha: 'parent-tree' } });
+    if (url.pathname.endsWith('/git/trees')) {
+      assert.ok(body.tree.every((entry) => blobs.has(entry.sha)), 'All media must be prepared before the public tree is created');
+      return reply({ sha: 'new-tree' });
+    }
+    if (url.pathname.endsWith('/git/commits')) return reply({ sha: 'new-commit' });
+    if (url.pathname.endsWith('/git/refs/heads/main')) return reply({});
+    throw new Error(`Unexpected request: ${method} ${url.pathname}`);
+  };
+  return {
+    calls,
+    async post(route, body) {
+      requests = 0;
+      const response = await worker.fetch(await authenticatedRequest(`/api/${route}`, { method: 'POST', body: JSON.stringify(body) }), env);
+      return { status: response.status, body: await response.json(), requests };
+    },
+  };
+}
+
+test('40-image publishing stays below 50 subrequests per batch and publishes atomically', async (context) => {
+  const fixture = publishingFixture(context);
+  let offset = 0;
+  let projectSha;
+  let batches = 0;
+  do {
+    const result = await fixture.post('prepare-publish', { slug: baseProject.slug, offset, projectSha });
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+    assert.ok(result.requests < 50);
+    projectSha = result.body.projectSha;
+    offset = result.body.nextOffset;
+    batches++;
+  } while (offset !== null);
+  assert.equal(batches, 4);
+  assert.equal(fixture.calls.filter((call) => call.method === 'PATCH').length, 0);
+  const result = await fixture.post('publish', { slug: baseProject.slug, published: true, projectSha });
+  assert.equal(result.status, 200, JSON.stringify(result.body));
+  assert.ok(result.requests < 50);
+  assert.equal(fixture.calls.find((call) => call.path.endsWith('/git/trees')).body.tree.length, 41);
+  assert.equal(fixture.calls.filter((call) => call.method === 'PATCH').length, 1);
+  assert.ok(fixture.calls.some((call) => call.path.endsWith('/portfolio-content/git/blobs/media-0')));
+});
+
+test('changed drafts and old clients stop before making public changes', async (context) => {
+  const fixture = publishingFixture(context);
+  for (const route of ['prepare-publish', 'publish']) {
+    const result = await fixture.post(route, { slug: baseProject.slug, published: true, projectSha: 'stale-sha' });
+    assert.equal(result.status, 409);
+    assert.match(result.body.error, /draft changed/);
+  }
+  assert.equal((await fixture.post('publish', { slug: baseProject.slug, published: true })).status, 409);
+  assert.equal(fixture.calls.filter((call) => call.method !== 'GET').length, 0);
+});
+
+test('failed image preparation leaves the public branch untouched', async (context) => {
+  const fixture = publishingFixture(context, { failMedia: true });
+  assert.equal((await fixture.post('prepare-publish', { slug: baseProject.slug })).status, 502);
+  assert.equal(fixture.calls.filter((call) => call.method === 'PATCH').length, 0);
+});
+
+test('unpublishing a large project does not prepare or copy its media', async (context) => {
+  const fixture = publishingFixture(context);
+  const result = await fixture.post('publish', { slug: baseProject.slug, published: false });
+  assert.equal(result.status, 200, JSON.stringify(result.body));
+  assert.equal(fixture.calls.find((call) => call.path.endsWith('/git/trees')).body.tree.length, 1);
+  assert.equal(fixture.calls.filter((call) => call.path.includes('/contents/media/')).length, 0);
+});
+
+test('private media preview retrieves bytes when Contents API omits large-file data', async (context) => {
+  publishingFixture(context);
+  const response = await worker.fetch(await authenticatedRequest('/api/media/image-0.png'), env);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('content-type'), 'image/png');
+  assert.equal(await response.text(), 'image-0');
+});
 async function authenticatedRequest(path, options = {}) {
   const csrf = 'csrf-token';
   const session = await sealSession({ token: 'github-token', login: 'FolushoJoseph', csrf, expiresAt: Date.now() + 60000 }, env.SESSION_SECRET);
@@ -45,12 +149,44 @@ test('project validation protects media paths and types', () => {
   assert.throws(() => validateProject({ ...baseProject, sections: [{ type: 'full-image', assets: ['https://vimeo.com/123456789'] }] }));
   assert.throws(() => validateProject({ ...baseProject, sections: [{ type: 'video', assets: ['https://evil.example/video'] }] }));
   assert.throws(() => validateProject({ ...baseProject, cover_image: '' }, { requireMedia: true }));
+  const text = validateProject({ ...baseProject, sections: [{ type: 'text', heading: '  The solution  ', body: 'A focused design system.' }] }).sections[0];
+  assert.deepEqual(text, { id: text.id, type: 'text', heading: 'The solution', body: 'A focused design system.', order: 0 });
+  assert.equal('assets' in text, false);
+  assert.throws(() => validateProject({ ...baseProject, sections: [{ type: 'text', heading: '', body: '   ' }] }, { requireMedia: true }));
 });
 
 test('API requires an encrypted session and matching CSRF token', async () => {
   assert.equal((await worker.fetch(new Request('https://cms.example.com/api/projects'), env)).status, 401);
   const request = await authenticatedRequest('/api/save', { method: 'POST', body: JSON.stringify(baseProject), headers: { 'x-cms-csrf': 'wrong' } });
   assert.equal((await worker.fetch(request, env)).status, 403);
+});
+
+test('GitHub authorization requests repository access', async () => {
+  const response = await worker.fetch(new Request('https://cms.example.com/auth/login'), env);
+  const location = new URL(response.headers.get('location'));
+  assert.equal(location.searchParams.get('scope'), 'repo');
+});
+
+test('project listing derives publication and pending-change state from the public repository', async (context) => {
+  const originalFetch = globalThis.fetch;
+  context.after(() => { globalThis.fetch = originalFetch; });
+  const publicProject = { ...baseProject, title: 'Previously published title', published: true };
+  globalThis.fetch = async (input) => {
+    const url = new URL(typeof input === 'string' ? input : input.url);
+    const response = (value, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
+    if (url.pathname.endsWith('/repos/emmanuel-joseph-design/portfolio-content')) return response({ id: 1 });
+    if (url.pathname.endsWith('/contents/projects') && url.searchParams.get('ref') === 'main') return response([{ type: 'file', name: 'identity-project.json' }]);
+    if (url.pathname.endsWith('/portfolio-content/contents/projects/identity-project.json')) return response({ content: toBase64(JSON.stringify(baseProject)) });
+    if (url.pathname.endsWith('/emmanuel-portfolio/contents/content/projects/identity-project.json')) return response({ content: toBase64(JSON.stringify(publicProject)) });
+    return response({ message: `Unexpected mock request: ${url.pathname}` }, 500);
+  };
+  const request = await authenticatedRequest('/api/projects');
+  const response = await worker.fetch(request, env);
+  const result = await response.json();
+  assert.equal(response.status, 200, JSON.stringify(result));
+  const [project] = result;
+  assert.equal(project.published, true);
+  assert.equal(project.hasUnpublishedChanges, true);
 });
 
 test('publishing creates a public tree containing only the selected project assets', async (context) => {

@@ -49,6 +49,9 @@ test('validation rejects traversal and incorrect gallery media types',()=>{
   assert.throws(()=>validateProject({...project,sections:[{type:'video',assets:['https://evil.example/video']}]}));
   assert.throws(()=>validateProject({...project,categories:['Unknown']}));
   assert.equal(validateProject({...project,title:'  Brand work  '}).title,'Brand work');
+  const text=validateProject({...project,sections:[{type:'text',heading:'  The problem  ',body:'A difficult brief.\n\nA clear response.'}]}).sections[0];
+  assert.deepEqual(text,{id:text.id,type:'text',heading:'The problem',body:'A difficult brief.\n\nA clear response.',order:0});
+  assert.equal('assets' in text,false);
 });
 
 for (const failBuild of [false,true]) test(`publishing ${failBuild ? 'stops before Git push on a failed build' : 'includes only selected content and uploaded media'}`,async(t)=>{
@@ -70,7 +73,7 @@ for (const failBuild of [false,true]) test(`publishing ${failBuild ? 'stops befo
   const post=(route,body)=>fetch(`${origin}/api/${route}`,{method:'POST',headers:{Origin:origin,'X-CMS-Token':token,'Content-Type':'application/json'},body:JSON.stringify(body)});
   const data='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
   const {url}=await(await post('upload',{name:'photo.png',data})).json();
-  await post('save',{...project,cover_image:url});await post('save',{...project,slug:'private-draft'});
+  await post('save',{...project,cover_image:url,sections:[{type:'text',heading:'Solution',body:'A focused design system.'}]});await post('save',{...project,slug:'private-draft'});
   await post('publish',{slug:project.slug,published:true});
   let status;
   for(let i=0;i<100;i++){status=await(await fetch(`${origin}/api/status`)).json();if(status.state!=='running')break;await new Promise((resolve)=>setTimeout(resolve,10));}

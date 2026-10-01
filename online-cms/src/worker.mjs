@@ -120,6 +120,12 @@ export function validateProject(value, { requireMedia = false } = {}) {
     cover_image: mediaPath(value.cover_image, requireMedia),
     published: Boolean(value.published),
     sections: value.sections.map((section, order) => {
+      if (section?.type === 'text') {
+        const heading = String(section.heading ?? '').trim().slice(0, 250);
+        const body = String(section.body ?? '').slice(0, 20000);
+        if (requireMedia && !body.trim()) throw new HttpError(400, 'Add a description to every text section before publishing.');
+        return { id: String(section.id || crypto.randomUUID()), type: 'text', heading, body, order };
+      }
       if (!['full-image', 'double-image', 'video'].includes(section?.type)) throw new HttpError(400, 'Choose a valid gallery section type.');
       const expected = section.type === 'double-image' ? 2 : 1;
       if (!Array.isArray(section.assets) || section.assets.length !== expected) throw new HttpError(400, 'A gallery section has the wrong number of files.');
@@ -211,6 +217,12 @@ async function putContent(env, token, repo, path, bytes, message, expectedSha) {
   }
 }
 
+function comparableProject(value) {
+  const project = validateProject(value);
+  project.published = false;
+  return JSON.stringify(project);
+}
+
 async function listProjects(env, token) {
   await github(env, token, repositoryEndpoint(env, env.CONTENT_REPO));
   let entries;
@@ -219,7 +231,18 @@ async function listProjects(env, token) {
   if (!Array.isArray(entries)) return [];
   const projects = await Promise.all(entries.filter((entry) => entry.type === 'file' && entry.name.endsWith('.json')).map(async (entry) => {
     const file = await getContent(env, token, env.CONTENT_REPO, `projects/${entry.name}`);
-    return { ...JSON.parse(decode(base64ToBytes(file.content))), revision: file.sha };
+    const draft = validateProject(JSON.parse(decode(base64ToBytes(file.content))));
+    const publicFile = await maybeContent(env, token, env.SITE_REPO, `content/projects/${draft.slug}.json`);
+    let published = false;
+    let hasUnpublishedChanges = false;
+    if (publicFile) {
+      try {
+        const publicProject = validateProject(JSON.parse(decode(base64ToBytes(publicFile.content))));
+        published = publicProject.published;
+        hasUnpublishedChanges = published && comparableProject(draft) !== comparableProject(publicProject);
+      } catch { /* An invalid public entry is treated as unavailable. */ }
+    }
+    return { ...draft, published, hasUnpublishedChanges, revision: file.sha };
   }));
   return projects.sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (b.year ?? 0) - (a.year ?? 0));
 }
@@ -227,11 +250,25 @@ async function listProjects(env, token) {
 async function readPrivateMedia(env, token, publicPath) {
   const filename = publicPath.split('/').pop();
   if (!/^[a-zA-Z0-9-]+\.(?:png|jpe?g|webp|gif|mp4|webm)$/.test(filename || '')) throw new HttpError(400, 'Invalid media request.');
-  const file = await getContent(env, token, env.CONTENT_REPO, `media/${filename}`);
+  const file = await mediaContent(env, token, filename);
   return { bytes: base64ToBytes(file.content), contentType: MEDIA_TYPES[extension(filename)] };
 }
 
-async function publicCommit(env, token, project) {
+async function mediaContent(env, token, filename) {
+  let file = await getContent(env, token, env.CONTENT_REPO, `media/${filename}`);
+  // The Contents API omits inline data for files larger than 1 MB.
+  if (file.encoding === 'none' || !file.content) {
+    file = await github(env, token, repositoryEndpoint(env, env.CONTENT_REPO, `/git/blobs/${file.sha}`));
+  }
+  if (typeof file.content !== 'string' || !file.content) throw new HttpError(502, 'An image could not be read from GitHub. Retry publishing.');
+  return file;
+}
+
+const projectAssets = (project) => [...new Set([project.cover_image, ...project.sections.flatMap((section) => section.type === 'text' ? [] : section.assets)])].filter((asset) => asset.startsWith('/media/'));
+
+async function publicCommit(env, token, project, prepared = false) {
+  const assets = project.published ? projectAssets(project) : [];
+  if (!prepared && assets.length > 10) throw new HttpError(409, 'Refresh the CMS and publish again to prepare this project’s images in batches.');
   const ref = await github(env, token, repositoryEndpoint(env, env.SITE_REPO, '/git/ref/heads/main'));
   const parent = await github(env, token, repositoryEndpoint(env, env.SITE_REPO, `/git/commits/${ref.object.sha}`));
   const published = { ...validateProject(project), id: project.slug, published: Boolean(project.published) };
@@ -241,10 +278,21 @@ async function publicCommit(env, token, project) {
   });
   tree.push({ path: `content/projects/${project.slug}.json`, mode: '100644', type: 'blob', sha: projectBlob.sha });
   if (project.published) {
-    const assets = [...new Set([project.cover_image, ...project.sections.flatMap((section) => section.assets)])].filter((asset) => typeof asset === 'string' && asset.startsWith('/media/'));
+    let mediaTree;
+    if (prepared) {
+      const manifest = await github(env, token, repositoryEndpoint(env, env.CONTENT_REPO, '/git/trees/main?recursive=1'));
+      if (manifest.truncated) throw new HttpError(502, 'GitHub returned an incomplete media list. Publishing was stopped.');
+      mediaTree = new Map(manifest.tree.filter((entry) => entry.type === 'blob').map((entry) => [entry.path, entry.sha]));
+    }
     for (const publicPath of assets) {
       const filename = publicPath.split('/').pop();
-      const privateFile = await getContent(env, token, env.CONTENT_REPO, `media/${filename}`);
+      if (prepared) {
+        const sha = mediaTree.get(`media/${filename}`);
+        if (!sha) throw new HttpError(409, 'A project image is missing. Refresh the CMS and check the gallery before publishing.');
+        tree.push({ path: `public/media/cms/${filename}`, mode: '100644', type: 'blob', sha });
+        continue;
+      }
+      const privateFile = await mediaContent(env, token, filename);
       const blob = await github(env, token, repositoryEndpoint(env, env.SITE_REPO, '/git/blobs'), {
         method: 'POST', body: JSON.stringify({ content: privateFile.content.replace(/\s/g, ''), encoding: 'base64' }),
       });
@@ -263,12 +311,10 @@ async function publicCommit(env, token, project) {
   return commit.sha;
 }
 
-async function publicCommitWithRetry(env, token, project, attempts = 3) {
-  let lastError;
+async function publicCommitWithRetry(env, token, project, prepared = false, attempts = 3) {
   for (let attempt = 0; attempt < attempts; attempt += 1) {
-    try { return await publicCommit(env, token, project); }
+    try { return await publicCommit(env, token, project, prepared); }
     catch (error) {
-      lastError = error;
       if (!(error instanceof HttpError) || ![409, 422, 502].includes(error.githubStatus ?? error.status)) throw error;
     }
   }
@@ -310,6 +356,7 @@ async function handleAuth(request, env, url) {
     target.searchParams.set('client_id', env.GITHUB_CLIENT_ID);
     target.searchParams.set('redirect_uri', callback);
     target.searchParams.set('state', state);
+    target.searchParams.set('scope', 'repo');
     return new Response(null, { status: 302, headers: { location: target.toString(), 'set-cookie': cookie(STATE_COOKIE, state, 600) } });
   }
   if (url.pathname === '/auth/callback') {
@@ -363,11 +410,30 @@ async function handleApi(request, env, url) {
     await putContent(env, session.token, env.CONTENT_REPO, `media/${filename}`, bytes, `CMS: Upload ${filename}`);
     return json({ url: `/media/cms/${filename}` });
   }
+  if (url.pathname === '/api/prepare-publish') {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(body.slug || '')) throw new HttpError(400, 'Invalid project URL name.');
+    const offset = body.offset ?? 0;
+    if (!Number.isInteger(offset) || offset < 0) throw new HttpError(400, 'Invalid publishing progress.');
+    const file = await getContent(env, session.token, env.CONTENT_REPO, `projects/${body.slug}.json`);
+    if ((offset > 0 && !body.projectSha) || (body.projectSha && body.projectSha !== file.sha)) throw new HttpError(409, 'The draft changed while publishing. Publish again to use the latest draft.');
+    const project = validateProject(JSON.parse(decode(base64ToBytes(file.content))), { requireMedia: true });
+    const assets = projectAssets(project);
+    if (offset > assets.length) throw new HttpError(400, 'Invalid publishing progress.');
+    for (const asset of assets.slice(offset, offset + 10)) {
+      const media = await mediaContent(env, session.token, asset.split('/').pop());
+      await github(env, session.token, repositoryEndpoint(env, env.SITE_REPO, '/git/blobs'), {
+        method: 'POST', body: JSON.stringify({ content: media.content.replace(/\s/g, ''), encoding: 'base64' }),
+      });
+    }
+    const completed = Math.min(offset + 10, assets.length);
+    return json({ projectSha: file.sha, completed, total: assets.length, nextOffset: completed < assets.length ? completed : null });
+  }
   if (url.pathname === '/api/publish') {
     const projectFile = await getContent(env, session.token, env.CONTENT_REPO, `projects/${body.slug}.json`);
+    if (body.projectSha && body.projectSha !== projectFile.sha) throw new HttpError(409, 'The draft changed while publishing. Publish again to use the latest draft.');
     const project = validateProject(JSON.parse(decode(base64ToBytes(projectFile.content))), { requireMedia: Boolean(body.published) });
     project.published = Boolean(body.published);
-    await publicCommitWithRetry(env, session.token, project);
+    await publicCommitWithRetry(env, session.token, project, Boolean(body.projectSha));
     let warning = '';
     try {
       await putContent(env, session.token, env.CONTENT_REPO, `projects/${project.slug}.json`, encode(JSON.stringify(project, null, 2) + '\n'), `CMS: Mark ${project.published ? 'published' : 'unpublished'} ${project.slug}`);

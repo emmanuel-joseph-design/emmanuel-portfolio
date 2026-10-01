@@ -143,6 +143,7 @@ async function dashboard() {
     info.append(element('h2', item.title));
     const badges = element('div', '', 'badges');
     badges.append(element('span', item.published ? 'Published' : 'Private draft', `badge${item.published ? ' live' : ''}`));
+    if (item.hasUnpublishedChanges) badges.append(element('span', 'Unpublished changes', 'badge pending'));
     info.append(badges, element('p', `${item.categories.join(', ')} · ${item.year}`));
     const edit = element('button', 'Edit', 'outline');
     edit.onclick = () => editProject(item);
@@ -242,6 +243,24 @@ function doubleMediaField(current, onChanged, index) {
   return slot;
 }
 
+function textFields(section) {
+  const fields = element('div', '', 'text-section-fields');
+  const headingLabel = element('label');
+  headingLabel.append(element('span', 'Heading (optional)'));
+  const heading = document.createElement('input');
+  heading.type = 'text'; heading.maxLength = 250; heading.placeholder = 'For example: The problem'; heading.value = section.heading || '';
+  heading.oninput = () => { section.heading = heading.value; };
+  headingLabel.append(heading);
+  const bodyLabel = element('label');
+  bodyLabel.append(element('span', 'Description'));
+  const body = document.createElement('textarea');
+  body.rows = 7; body.maxLength = 20000; body.required = true; body.placeholder = 'Explain your thinking, process, solution, or deliverables…'; body.value = section.body || '';
+  body.oninput = () => { section.body = body.value; };
+  bodyLabel.append(body);
+  fields.append(headingLabel, bodyLabel);
+  return fields;
+}
+
 function renderMedia() {
   editorLayouts.forEach((dispose) => dispose()); editorLayouts = [];
   $('cover').replaceChildren(uploadZone(project.cover_image, false, (url) => { project.cover_image = url; }));
@@ -265,6 +284,11 @@ function renderMedia() {
     }
     head.append(controls);
     block.append(head);
+    if (section.type === 'text') {
+      block.append(textFields(section));
+      $('sections').append(block);
+      return;
+    }
     block.append(layoutControls(section, changed));
     const group = element('div', '', section.type === 'double-image' ? 'pair' : '');
     section.assets.forEach((asset, assetIndex) => group.append(section.type === 'video' ? videoLinkField(asset, (url) => { section.assets[assetIndex] = url; }) : section.type === 'double-image' ? doubleMediaField(asset, (url) => { section.assets[assetIndex] = url; }, assetIndex) : uploadZone(asset, false, (url) => { section.assets[assetIndex] = url; })));
@@ -306,6 +330,13 @@ function preview() {
   info.append(element('p', value.description), element('p', `${value.client}\n${value.role}\n${value.year} · ${value.categories.join(', ')}`));
   article.append(info);
   for (const section of value.sections) {
+    if (section.type === 'text') {
+      const text = element('section', '', 'preview-text-section');
+      if (section.heading) text.append(element('h2', section.heading));
+      text.append(element('p', section.body));
+      article.append(text);
+      continue;
+    }
     const group = createGallery(section, assetUrl, embedUrl);
     article.append(group);
     previewLayouts.push(sizeGallery(group, section));
@@ -315,11 +346,23 @@ function preview() {
 }
 
 async function publish(published) {
+  if (locked) return;
   try {
-    await save();
     lock(true);
-    notice(published ? 'Publishing project and media…' : 'Removing project from public listings…');
-    const result = await api('publish', { slug: project.slug, published });
+    await save();
+    notice(published ? 'Sending project and media for publishing…' : 'Sending the unpublish request…');
+    let projectSha;
+    if (published) {
+      let offset = 0;
+      do {
+        const progress = await api('prepare-publish', { slug: project.slug, offset, projectSha });
+        projectSha = progress.projectSha;
+        offset = progress.nextOffset;
+        notice(`Preparing images for publishing… ${progress.completed} of ${progress.total}`);
+      } while (offset !== null);
+      notice('Publishing project…');
+    }
+    const result = await api('publish', { slug: project.slug, published, projectSha });
     project.published = published;
     dirty = false;
     await dashboard();
@@ -346,7 +389,10 @@ $('publish').onclick = () => publish(true);
 $('unpublish').onclick = () => publish(false);
 for (const button of document.querySelectorAll('[data-section]')) button.onclick = () => {
   const type = button.dataset.section;
-  project.sections.push({ id: crypto.randomUUID(), type, assets: type === 'double-image' ? ['', ''] : [''], order: project.sections.length });
+  const order = project.sections.length;
+  project.sections.push(type === 'text'
+    ? { id: crypto.randomUUID(), type, heading: '', body: '', order }
+    : { id: crypto.randomUUID(), type, assets: type === 'double-image' ? ['', ''] : [''], order });
   changed(); renderMedia();
 };
 window.addEventListener('beforeunload', (event) => { if (dirty || uploads) { event.preventDefault(); event.returnValue = ''; } });

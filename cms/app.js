@@ -105,6 +105,23 @@ function videoLinkField(current, onChanged, onCommit = renderMedia) {
   return zone;
 }
 function doubleMediaField(current,onChanged,index){const slot=element('div','','media-choice');slot.style.cssText='display:grid;align-content:start;gap:10px';const label=element('label');label.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:700';label.append(element('span',`Slot ${index+1} media`));const select=document.createElement('select');select.style.cssText='border:1px solid var(--line);border-radius:6px;padding:8px;color:var(--purple);background:white;font:600 12px Inter,Arial,sans-serif';select.setAttribute('aria-label',`Slot ${index+1} media type`);select.append(new Option('Image','image'),new Option('Embedded video','embed'));select.value=embedUrl(current)?'embed':'image';let field=select.value==='embed'?videoLinkField(current,onChanged,()=>{}):uploadZone(current,false,onChanged);select.onchange=()=>{onChanged('');changed();const next=select.value==='embed'?videoLinkField('',onChanged,()=>{}):uploadZone('',false,onChanged);field.replaceWith(next);field=next;};label.append(select);slot.append(label,field);return slot;}
+function textFields(section) {
+  const fields = element('div','','text-section-fields');
+  const headingLabel = element('label');
+  headingLabel.append(element('span','Heading (optional)'));
+  const heading = document.createElement('input');
+  heading.type = 'text'; heading.maxLength = 250; heading.placeholder = 'For example: The problem'; heading.value = section.heading || '';
+  heading.oninput = () => { section.heading = heading.value; };
+  headingLabel.append(heading);
+  const bodyLabel = element('label');
+  bodyLabel.append(element('span','Description'));
+  const body = document.createElement('textarea');
+  body.rows = 7; body.maxLength = 20000; body.required = true; body.placeholder = 'Explain your thinking, process, solution, or deliverables…'; body.value = section.body || '';
+  body.oninput = () => { section.body = body.value; };
+  bodyLabel.append(body);
+  fields.append(headingLabel,bodyLabel);
+  return fields;
+}
 function renderMedia() {
   editorLayouts.forEach((dispose) => dispose()); editorLayouts = [];
   $('cover').replaceChildren(uploadZone(project.cover_image,false,(url) => { project.cover_image=url; }));
@@ -117,7 +134,13 @@ function renderMedia() {
       ['↓','Move section down',() => { if(index<project.sections.length-1) [project.sections[index+1],project.sections[index]]=[project.sections[index],project.sections[index+1]]; }],
       ['×','Remove section',() => { project.sections.splice(index,1); }],
     ]) { const button=element('button',label,'outline'); button.type='button'; button.setAttribute('aria-label',title); button.onclick=()=>{ action(); changed(); renderMedia(); }; controls.append(button); }
-    head.append(controls); block.append(head); block.append(layoutControls(section, changed)); const group=element('div','',section.type==='double-image'?'pair':'');
+    head.append(controls); block.append(head);
+    if (section.type === 'text') {
+      block.append(textFields(section));
+      $('sections').append(block);
+      return;
+    }
+    block.append(layoutControls(section, changed)); const group=element('div','',section.type==='double-image'?'pair':'');
     section.assets.forEach((asset,i)=>group.append(section.type==='video'?videoLinkField(asset,(url)=>{section.assets[i]=url;}):section.type==='double-image'?doubleMediaField(asset,(url)=>{section.assets[i]=url;},i):uploadZone(asset,false,(url)=>{section.assets[i]=url;})));
     block.append(group); $('sections').append(block);
   });
@@ -136,6 +159,13 @@ function preview() {
   if(p.cover_image){const cover=element('img','','preview-cover');cover.src=p.cover_image;cover.alt=p.title;article.append(cover);}
   const info=element('div','','preview-info'); info.append(element('p',p.description),element('p',`${p.client}\n${p.role}\n${p.year} · ${p.categories.join(', ')}`));article.append(info);
   for (const section of p.sections) {
+    if (section.type === 'text') {
+      const text = element('section','','preview-text-section');
+      if (section.heading) text.append(element('h2',section.heading));
+      text.append(element('p',section.body));
+      article.append(text);
+      continue;
+    }
     const group = createGallery(section, (value) => value, embedUrl);
     article.append(group);
     previewLayouts.push(sizeGallery(group, section));
@@ -164,7 +194,7 @@ $('add').onclick=()=>editProject();
 $('back').onclick=()=>{if(!dirty||confirm('Leave without saving these changes?'))dashboard().catch((e)=>notice(e.message,true));};
 $('preview').onclick=preview;$('close-preview').onclick=()=>$('preview-dialog').close();
 $('publish').onclick=()=>publishing(true);$('unpublish').onclick=()=>publishing(false);
-for(const button of document.querySelectorAll('[data-section]'))button.onclick=()=>{const type=button.dataset.section;project.sections.push({id:crypto.randomUUID(),type,assets:type==='double-image'?['','']:[''],order:project.sections.length});changed();renderMedia();};
+for(const button of document.querySelectorAll('[data-section]'))button.onclick=()=>{const type=button.dataset.section;const order=project.sections.length;project.sections.push(type==='text'?{id:crypto.randomUUID(),type,heading:'',body:'',order}:{id:crypto.randomUUID(),type,assets:type==='double-image'?['','']:[''],order});changed();renderMedia();};
 window.addEventListener('beforeunload',(event)=>{if(dirty||uploads){event.preventDefault();event.returnValue='';}});
 dashboard().then(()=>monitor()).catch((error)=>notice(error.message,true));
 

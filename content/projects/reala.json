@@ -1,0 +1,225 @@
+{
+  "slug": "reala",
+  "title": "Reala",
+  "description": "Reala is a real estate platform created to make property transactions and management simpler for property managers, agents, buyers, sellers, and renters. In a category often shaped by complicated processes, unclear pricing, and too many middlemen, the opportunity was to build a brand that made the experience feel easier, safer, and more trustworthy.\n\nThe work began by looking at the common frustrations around real estate and property management, particularly the amount of friction people experience when trying to complete simple tasks. From this came the central idea of **Ease of Operation**. Rather than positioning Reala simply as another property platform, the goal was to create a brand that represented clarity, accessibility, and a more straightforward way to manage real estate.\n\nThe identity translates this idea into a simple and approachable visual system. At its center is a home symbol created from the negative space of the letter “R,” connecting the brand directly to property while giving Reala a recognizable visual signature of its own. The wider identity was designed to feel clean, modern, and dependable, helping balance the seriousness of real estate with a more welcoming experience.\n\nAcross the brand system, typography, color, layout, and supporting graphics were developed to reinforce simplicity and consistency. The system was designed to work across product interfaces, marketing materials, social media, and other digital touchpoints without becoming overly complex. Each element supports the same idea: making Reala feel easy to understand and easy to interact with.\n\nThe resulting identity gives Reala a clearer way to communicate what it stands for. More than a real estate platform, the brand is positioned around reducing friction and making property management and transactions feel more direct, transparent, and approachable.",
+  "challenge": "Reala was created to simplify the way people manage and complete property transactions, but the real estate experience is often slowed down by complicated processes, unclear information, and too many middlemen. The challenge was to create a brand that could make the platform feel simpler and more trustworthy without losing the seriousness expected in real estate.",
+  "solution": "We built the identity around the idea of Ease of Operation, creating a visual system that feels clear, approachable, and dependable. At the center is a home symbol formed from the negative space of the letter “R,” giving Reala a direct connection to property while remaining distinctive. Supported by clean typography, a simple color system, and structured layouts, the identity gives Reala a more recognizable and consistent way to communicate across product, marketing, and digital touchpoints.",
+  "client": "Reala",
+  "role": "Brand Designer",
+  "credits": "Emmanuel Folusho Joseph",
+  "year": 2025,
+  "order": 0,
+  "categories": [
+    "Brand",
+    "Marketing"
+  ],
+  "cover_image": "/media/cms/f1044d97-7bee-4b70-8eb4-458937cc1709.webp",
+  "published": true,
+  "sections": [
+    {
+      "id": "30df6891-0b61-473d-b944-21e3df312c8e",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/43fc5d42-aec7-4df1-a2d5-89130d1dd63b.webp"
+      ],
+      "order": 0
+    },
+    {
+      "id": "ccaf19f8-e789-4d23-907f-285314673142",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/2d91718c-d852-41bb-8a1f-e6d5cb03da03.webp"
+      ],
+      "order": 1
+    },
+    {
+      "id": "7ca1b224-f71d-4eb3-8a36-ffd0e1997b85",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/ff4f4ce0-d18e-407a-8548-f3aced9e4e45.webp"
+      ],
+      "order": 2
+    },
+    {
+      "id": "d874bc4d-b992-471e-a88b-c1ae5cb17690",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/1365506a-4b8f-4db6-9d84-ab0bffe09a2d.webp"
+      ],
+      "order": 3
+    },
+    {
+      "id": "c081f4af-379e-44f3-b0c1-aafe8701025d",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/dcf68dc5-db38-4fdd-a6ea-dea9da9b7ed4.webp"
+      ],
+      "order": 4
+    },
+    {
+      "id": "d3b521ee-44b4-42f7-8c4f-5da41d4dc789",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/85c7adb6-d1bc-4fdf-9622-860cec219dcb.webp"
+      ],
+      "order": 5
+    },
+    {
+      "id": "9d1faeb8-86f6-4f4d-8d5f-56e68f47a918",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/501be8db-88f8-4861-8034-a4cea5bf9bd1.webp"
+      ],
+      "order": 6
+    },
+    {
+      "id": "55c7f781-42c8-4d42-87a8-1f3116143c2e",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/f1cbc5bd-ee15-4d89-84d3-dc8447b24589.webp"
+      ],
+      "order": 7
+    },
+    {
+      "id": "7a5974b8-9fe4-4ae0-b429-4f1bf60ea039",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/8e8ff83b-a5fb-4b96-840c-548e60e08751.webp"
+      ],
+      "order": 8
+    },
+    {
+      "id": "e4905a09-59b1-4fdb-b66f-17b89722ec99",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/2298ce1b-88f3-4c00-941e-95d4b3f615d0.webp"
+      ],
+      "order": 9
+    },
+    {
+      "id": "1a1c2625-2267-49af-bfa6-45c48069e503",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/9ed67407-d700-407b-addb-5fc27d3637a0.webp"
+      ],
+      "order": 10
+    },
+    {
+      "id": "95b26608-0827-44d7-8b65-e98005aa444e",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/2920bcf0-bea1-4bc9-9732-6ef7f73ed53c.webp"
+      ],
+      "order": 11
+    },
+    {
+      "id": "2d789f39-21cf-4f79-b4dc-560f882e3fb2",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/bffa5d36-f08d-4b31-b598-bddfb5dc9683.webp"
+      ],
+      "order": 12
+    },
+    {
+      "id": "e20d6ec4-269f-4574-a86b-458b0db3b1ac",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/e2582067-be42-4c29-b008-cbf9ea06adb1.webp"
+      ],
+      "order": 13
+    },
+    {
+      "id": "cd0e8f22-c562-4fc5-a07e-1183d2aae889",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/0b3373dc-dfcd-4edb-8dc9-690ff38f5b5b.webp"
+      ],
+      "order": 14
+    },
+    {
+      "id": "5c3d4777-ff40-4f1e-a31e-178653a501cd",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/b41aa1da-0022-47e3-881d-aa5a898e5a72.webp"
+      ],
+      "order": 15
+    },
+    {
+      "id": "45750f80-86d2-4039-a077-a866314aec53",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/c80441ab-4dca-4355-b894-f819d1655538.webp"
+      ],
+      "order": 16
+    },
+    {
+      "id": "c3b313d4-7d4b-4959-918f-05cef6c1285c",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/092cacbc-d920-4ad9-b1a8-b47f059fd3d0.webp"
+      ],
+      "order": 17
+    },
+    {
+      "id": "d36bbdf2-58d1-4970-a7db-15a71a18a84f",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/9a478b28-24f6-484d-89e1-aea8bb6bff19.webp"
+      ],
+      "order": 18
+    },
+    {
+      "id": "cedab021-d5f8-4844-9e72-52fd367c245a",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/f3c3f4b1-07d8-4511-b019-367471a0d60b.webp",
+        "/media/cms/927779ff-6e14-42d2-ba4b-edb58bb4aad9.webp"
+      ],
+      "order": 19
+    },
+    {
+      "id": "871dc673-4914-449d-986c-aa5cd77f93c8",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/fcf88812-9432-4a6c-b2e6-aa5654b76775.webp"
+      ],
+      "order": 20
+    },
+    {
+      "id": "0d45a0e8-ce0a-41e2-be58-2ffba30d409a",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/b87b8f36-b548-4bce-9572-ed87b25d0622.webp",
+        "/media/cms/42691722-e698-4d64-bc63-2831819fc099.webp"
+      ],
+      "order": 21
+    },
+    {
+      "id": "75ce0e3e-c9a1-4878-a1d6-e0841dc25e93",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/8f688085-f16a-4663-a7f8-820eeb17e3ac.webp",
+        "/media/cms/e80a3896-9b8b-4592-893a-25b49f416471.webp"
+      ],
+      "order": 22
+    },
+    {
+      "id": "17a38d83-209c-4ef3-a4bc-c2bf1d9cb0b4",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/5bd4bf89-a6ec-457a-b5f0-c6ec6d27057f.webp",
+        "/media/cms/1f03e73d-4ed2-4c1f-ba05-cd6a95937c06.webp"
+      ],
+      "order": 23
+    },
+    {
+      "id": "ed008223-32e1-4e8e-b3fb-fe5e01bd5e11",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/3ff56ed9-2b8a-4702-9f15-040bc4b6118f.webp"
+      ],
+      "order": 24
+    }
+  ],
+  "id": "reala"
+}

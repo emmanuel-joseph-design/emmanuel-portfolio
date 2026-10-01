@@ -1,0 +1,30 @@
+.preview-challenge-solution {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 48px;
+  padding: 48px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.preview-challenge-solution h2 {
+  margin: 0 0 14px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.preview-challenge-solution p {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 650px) {
+  .preview-challenge-solution {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+}

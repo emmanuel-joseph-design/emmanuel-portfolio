@@ -10,6 +10,9 @@ export function getProjects(): Project[] {
     const fail = (message: string): never => { throw new Error(`${name}: ${message}`); };
     if (!project.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(project.slug)) fail('Use a lowercase, hyphenated slug.');
     if (!project.title || typeof project.published !== 'boolean' || !Number.isInteger(project.year)) fail('Title, year and published are required.');
+    for (const field of ['challenge', 'solution'] as const) {
+      if (project[field] !== undefined && (typeof project[field] !== 'string' || project[field].length > 20000)) fail(`Invalid ${field}.`);
+    }
     if (!Array.isArray(project.categories) || project.categories.some((category) => !['Brand', 'Marketing', 'Product'].includes(category))) fail('Invalid categories.');
     if (!Array.isArray(project.sections)) fail('Sections must be an array.');
     for (const section of project.sections) {
@@ -38,7 +41,7 @@ export function getProjects(): Project[] {
         if (!asset.startsWith('/media/') || asset.includes('..') || !existsSync(path.join(process.cwd(), 'public', asset))) fail(`Missing local media: ${asset}`);
       }
     }
-    return { ...project, id: project.slug, order: project.order ?? 0 };
+    return { ...project, id: project.slug, challenge: project.challenge ?? '', solution: project.solution ?? '', order: project.order ?? 0 };
   });
   if (new Set(projects.map((project) => project.slug)).size !== projects.length) throw new Error('Project slugs must be unique.');
   return projects.filter((project) => project.published).sort((a, b) => a.order - b.order || b.year - a.year || a.slug.localeCompare(b.slug));

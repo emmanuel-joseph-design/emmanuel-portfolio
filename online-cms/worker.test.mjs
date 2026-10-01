@@ -153,6 +153,9 @@ test('project validation protects media paths and types', () => {
   assert.deepEqual(text, { id: text.id, type: 'text', heading: 'The solution', body: 'A focused design system.', order: 0 });
   assert.equal('assets' in text, false);
   assert.throws(() => validateProject({ ...baseProject, sections: [{ type: 'text', heading: '', body: '   ' }] }, { requireMedia: true }));
+  const overview = validateProject({ ...baseProject, challenge: 'A fragmented identity.', solution: 'A flexible design system.' });
+  assert.equal(overview.challenge, 'A fragmented identity.');
+  assert.equal(overview.solution, 'A flexible design system.');
 });
 
 test('API requires an encrypted session and matching CSRF token', async () => {

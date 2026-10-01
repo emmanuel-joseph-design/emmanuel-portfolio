@@ -91,7 +91,7 @@ function lock(value) {
 function collect() {
   return {
     ...project,
-    ...Object.fromEntries(['title', 'description', 'client', 'role', 'credits'].map((key) => [key, form.elements[key].value])),
+    ...Object.fromEntries(['title', 'description', 'challenge', 'solution', 'client', 'role', 'credits'].map((key) => [key, form.elements[key].value])),
     year: Number(form.elements.year.value),
     order: Number(form.elements.order.value),
     categories: [...form.querySelectorAll('[name=category]:checked')].map((input) => input.value),
@@ -299,10 +299,10 @@ function renderMedia() {
 
 function editProject(value) {
   project = structuredClone(value || {
-    slug: '', revision: null, title: '', description: '', client: '', role: '', year: new Date().getFullYear(),
+    slug: '', revision: null, title: '', description: '', challenge: '', solution: '', client: '', role: '', year: new Date().getFullYear(),
     order: 0, categories: [], cover_image: '', credits: 'Emmanuel Folusho Joseph', sections: [], published: false,
   });
-  for (const key of ['title', 'description', 'client', 'role', 'year', 'order', 'credits']) form.elements[key].value = project[key];
+  for (const key of ['title', 'description', 'challenge', 'solution', 'client', 'role', 'year', 'order', 'credits']) form.elements[key].value = project[key] ?? '';
   for (const input of form.querySelectorAll('[name=category]')) input.checked = project.categories.includes(input.value);
   $('editor-title').textContent = value ? 'Edit Project' : 'Add Project';
   $('save-state').textContent = value ? 'Ready to edit' : 'New private draft';
@@ -326,9 +326,16 @@ function preview() {
     cover.src = assetUrl(value.cover_image); cover.alt = value.title;
     article.append(cover);
   }
-  const info = element('div', '', 'preview-info');
-  info.append(element('p', value.description), element('p', `${value.client}\n${value.role}\n${value.year} · ${value.categories.join(', ')}`));
-  article.append(info);
+  if (value.challenge || value.solution) {
+    const overview = element('div', '', 'preview-challenge-solution');
+    for (const [label, content] of [['Challenge', value.challenge], ['Solution', value.solution]]) {
+      if (!content) continue;
+      const section = element('section');
+      section.append(element('h2', label), element('p', content));
+      overview.append(section);
+    }
+    article.append(overview);
+  }
   for (const section of value.sections) {
     if (section.type === 'text') {
       const text = element('section', '', 'preview-text-section');
@@ -341,6 +348,9 @@ function preview() {
     article.append(group);
     previewLayouts.push(sizeGallery(group, section));
   }
+  const info = element('div', '', 'preview-info');
+  info.append(element('p', value.description), element('p', `${value.client}\n${value.role}\n${value.year} · ${value.categories.join(', ')}`));
+  article.append(info);
   article.append(element('p', value.credits, 'preview-credits'));
   $('preview-dialog').showModal();
 }

@@ -56,16 +56,33 @@ export default async function ProjectPage({
           )}
         </div>
 
-        {/* Info block */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '48px',
-            padding: '48px var(--page-pad)',
-          }}
-        >
-          {/* Description */}
+        {/* Challenge and solution */}
+        {(project.challenge || project.solution) && (
+          <div className="challenge-solution">
+            {project.challenge && (
+              <section>
+                <h2>Challenge</h2>
+                <p>{project.challenge}</p>
+              </section>
+            )}
+            {project.solution && (
+              <section>
+                <h2>Solution</h2>
+                <p>{project.solution}</p>
+              </section>
+            )}
+          </div>
+        )}
+
+        {/* Project content */}
+        {project.sections.length > 0 && (
+          <div style={{ padding: '0 var(--page-pad) 48px' }}>
+            <MediaGallery sections={project.sections} />
+          </div>
+        )}
+
+        {/* Description and metadata */}
+        <div className="project-info-block">
           <div>
             <p
               style={{
@@ -79,7 +96,6 @@ export default async function ProjectPage({
             </p>
           </div>
 
-          {/* Metadata */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {[
               { label: 'Project', value: project.title },
@@ -96,15 +112,9 @@ export default async function ProjectPage({
           </div>
         </div>
 
-        {/* Gallery */}
-        {project.sections.length > 0 && (
-          <div style={{ padding: '0 var(--page-pad) 48px' }}>
-            <MediaGallery sections={project.sections} />
-          </div>
-        )}
-
         {/* Credits */}
         <div
+          className="credits-block"
           style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -130,11 +140,44 @@ export default async function ProjectPage({
       <Footer />
 
       <style>{`
+        .challenge-solution {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: clamp(32px, 6vw, 96px);
+          padding: clamp(48px, 7vw, 96px) var(--page-pad);
+          border-bottom: 1px solid var(--lavender);
+        }
+        .challenge-solution section {
+          min-width: 0;
+        }
+        .challenge-solution h2 {
+          margin: 0 0 18px;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          opacity: 0.55;
+        }
+        .challenge-solution p {
+          margin: 0;
+          font-size: clamp(17px, 1.8vw, 22px);
+          font-weight: 400;
+          line-height: 1.65;
+          white-space: pre-wrap;
+        }
+        .project-info-block {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 48px;
+          padding: 48px var(--page-pad);
+          border-top: 1px solid var(--lavender);
+        }
         @media (max-width: 768px) {
-          main > div:nth-child(2) {
+          .challenge-solution,
+          .project-info-block {
             grid-template-columns: 1fr !important;
           }
-          main > div:nth-child(4) {
+          .credits-block {
             flex-direction: column !important;
             gap: 8px !important;
           }

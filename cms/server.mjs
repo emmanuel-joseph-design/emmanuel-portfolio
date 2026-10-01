@@ -45,7 +45,7 @@ export function validateProject(value) {
   if (value.cover_image && mime[path.extname(value.cover_image).toLowerCase()]?.startsWith('video/')) throw new Error('The cover must be an image.');
   return {
     slug: value.slug, title: value.title.trim().slice(0, 250),
-    ...Object.fromEntries(['description', 'client', 'role', 'credits'].map((key) => [key, String(value[key] ?? '').slice(0, 20000)])),
+    ...Object.fromEntries(['description', 'challenge', 'solution', 'client', 'role', 'credits'].map((key) => [key, String(value[key] ?? '').slice(0, 20000)])),
     year: value.year, order: value.order, categories: [...new Set(value.categories)], cover_image: media(value.cover_image || ''),
     published: false,
     sections: value.sections.map((s, order) => {
@@ -180,7 +180,7 @@ export async function createCMS({ root = path.dirname(here), allowPublish = true
         if (url.pathname === '/') return send(200, (await fs.readFile(path.join(here, 'index.html'), 'utf8')).replace('__TOKEN__', token), 'text/html; charset=utf-8');
         if (url.pathname === '/app.js') return send(200, await fs.readFile(path.join(here, 'app.js')), 'text/javascript');
         if (['/gallery-layout.js', '/gallery-layout.css', '/vendor/vimeo-player.js'].includes(url.pathname)) return send(200, await fs.readFile(path.join(here, '../online-cms/public', url.pathname)), url.pathname.endsWith('.css') ? 'text/css' : 'text/javascript');
-        if (url.pathname === '/style.css') return send(200, await fs.readFile(path.join(here, 'style.css')), 'text/css');
+        if (['/style.css', '/project-overview.css'].includes(url.pathname)) return send(200, await fs.readFile(path.join(here, url.pathname.slice(1))), 'text/css');
         if (url.pathname === '/api/projects') return send(200, await list());
         if (url.pathname === '/api/status') return send(200, job);
         if (url.pathname.startsWith('/media/')) return send(200, await fs.readFile(await assetFile(url.pathname)), mime[path.extname(url.pathname).toLowerCase()]);

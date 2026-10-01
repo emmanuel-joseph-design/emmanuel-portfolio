@@ -27,7 +27,7 @@ function element(tag, text, className) {
   const node = document.createElement(tag); if (text) node.textContent = text; if (className) node.className = className; return node;
 }
 function collect() {
-  return { ...project, ...Object.fromEntries(['title','description','client','role','credits'].map((key) => [key, form.elements[key].value])), year: Number(form.elements.year.value), order: Number(form.elements.order.value), categories: [...form.querySelectorAll('[name=category]:checked')].map((input) => input.value) };
+  return { ...project, ...Object.fromEntries(['title','description','challenge','solution','client','role','credits'].map((key) => [key, form.elements[key].value])), year: Number(form.elements.year.value), order: Number(form.elements.order.value), categories: [...form.querySelectorAll('[name=category]:checked')].map((input) => input.value) };
 }
 async function save() {
   if (uploads) throw new Error('Wait for the uploads to finish.');
@@ -146,8 +146,8 @@ function renderMedia() {
   });
 }
 function editProject(value) {
-  project=structuredClone(value || {slug:'',title:'',description:'',client:'',role:'',year:new Date().getFullYear(),order:0,categories:[],cover_image:'',credits:'Emmanuel Folusho Joseph',sections:[],live:false});
-  for (const key of ['title','description','client','role','year','order','credits']) form.elements[key].value=project[key];
+  project=structuredClone(value || {slug:'',title:'',description:'',challenge:'',solution:'',client:'',role:'',year:new Date().getFullYear(),order:0,categories:[],cover_image:'',credits:'Emmanuel Folusho Joseph',sections:[],live:false});
+  for (const key of ['title','description','challenge','solution','client','role','year','order','credits']) form.elements[key].value=project[key] ?? '';
   for (const input of form.querySelectorAll('[name=category]')) input.checked=project.categories.includes(input.value);
   $('editor-title').textContent=value?'Edit Project':'Add Project'; $('save-state').textContent=value?'Ready to edit':'New project';
   $('unpublish').hidden=!project.live; dirty=false; renderMedia(); $('dashboard').hidden=true; $('editor').hidden=false; $('notice').hidden=true; form.elements.title.focus();
@@ -157,7 +157,14 @@ function preview() {
   const p=collect(); const article=$('preview-content'); article.replaceChildren();
   article.append(element('h1',p.title || 'Untitled project'));
   if(p.cover_image){const cover=element('img','','preview-cover');cover.src=p.cover_image;cover.alt=p.title;article.append(cover);}
-  const info=element('div','','preview-info'); info.append(element('p',p.description),element('p',`${p.client}\n${p.role}\n${p.year} · ${p.categories.join(', ')}`));article.append(info);
+  if (p.challenge || p.solution) {
+    const overview=element('div','','preview-challenge-solution');
+    for (const [label,value] of [['Challenge',p.challenge],['Solution',p.solution]]) {
+      if (!value) continue;
+      const section=element('section'); section.append(element('h2',label),element('p',value)); overview.append(section);
+    }
+    article.append(overview);
+  }
   for (const section of p.sections) {
     if (section.type === 'text') {
       const text = element('section','','preview-text-section');
@@ -170,6 +177,7 @@ function preview() {
     article.append(group);
     previewLayouts.push(sizeGallery(group, section));
   }
+  const info=element('div','','preview-info'); info.append(element('p',p.description),element('p',`${p.client}\n${p.role}\n${p.year} · ${p.categories.join(', ')}`));article.append(info);
   article.append(element('p',p.credits,'preview-credits'));$('preview-dialog').showModal();
 }
 async function publishing(published) {

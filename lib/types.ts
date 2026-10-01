@@ -26,6 +26,8 @@ export interface Project {
   slug: string;
   title: string;
   description: string;
+  challenge: string;
+  solution: string;
   client: string;
   role: string;
   year: number;

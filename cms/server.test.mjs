@@ -49,6 +49,9 @@ test('validation rejects traversal and incorrect gallery media types',()=>{
   assert.throws(()=>validateProject({...project,sections:[{type:'video',assets:['https://evil.example/video']}]}));
   assert.throws(()=>validateProject({...project,categories:['Unknown']}));
   assert.equal(validateProject({...project,title:'  Brand work  '}).title,'Brand work');
+  const overview=validateProject({...project,challenge:'A fragmented identity.',solution:'A flexible design system.'});
+  assert.equal(overview.challenge,'A fragmented identity.');
+  assert.equal(overview.solution,'A flexible design system.');
   const text=validateProject({...project,sections:[{type:'text',heading:'  The problem  ',body:'A difficult brief.\n\nA clear response.'}]}).sections[0];
   assert.deepEqual(text,{id:text.id,type:'text',heading:'The problem',body:'A difficult brief.\n\nA clear response.',order:0});
   assert.equal('assets' in text,false);

@@ -111,6 +111,8 @@ export function validateProject(value, { requireMedia = false } = {}) {
     slug: value.slug,
     title: value.title.trim().slice(0, 250),
     description: String(value.description ?? '').slice(0, 20000),
+    challenge: String(value.challenge ?? '').slice(0, 20000),
+    solution: String(value.solution ?? '').slice(0, 20000),
     client: String(value.client ?? '').slice(0, 500),
     role: String(value.role ?? '').slice(0, 500),
     credits: String(value.credits ?? '').slice(0, 5000),

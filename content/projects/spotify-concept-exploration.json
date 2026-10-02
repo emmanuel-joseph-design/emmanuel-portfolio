@@ -1,0 +1,174 @@
+{
+  "slug": "spotify-concept-exploration",
+  "title": "Spotify (Concept Exploration)",
+  "description": "Spotify is one of the world’s leading audio streaming platforms, built around helping people discover, enjoy, and connect with music and audio.\n\nFor this independent design exploration, I looked at how Spotify could strengthen the way it communicates personalization beyond individual playlists and recommendations. The idea was to create a campaign that gives users a fresh reason to return each week while staying within Spotify’s existing brand world.\n\nThe project became Your Week, Tuned., a campaign concept built around turning each week into a personalized listening moment shaped by the user’s mood, habits, and music taste.\n\nI developed the campaign across social content, digital ads, web, email, outdoor placements, presentation assets, and motion, focusing on how one simple idea could scale consistently across multiple touchpoints without redesigning the Spotify brand.",
+  "challenge": "Spotify already has a strong visual identity and a reputation for personalization, but many music platforms now offer similar discovery features and recommendations.\n\nThe challenge was to create a campaign that made Spotify’s personalization feel more immediate, emotional, and culturally relevant without introducing a new identity or moving away from the brand people already recognize.\n\nThe work needed to give users a clear reason to return regularly while showing how Spotify could turn everyday listening behavior into something that feels personal and worth anticipating.",
+  "solution": "The campaign was built around the idea of Your Week, Tuned, positioning Spotify as something that adapts to the rhythm of each user’s week.\n\nUsing Spotify’s existing visual language, bold typography, personalized messaging, expressive imagery, and motion, I created a flexible campaign system that could change depending on different users, moods, and listening habits.\n\nAcross social posts, carousels, stories, web assets, email, display ads, outdoor placements, and motion pieces, the system gives Spotify a consistent way to make personalization feel more visible and more human while remaining clearly connected to the existing brand.",
+  "client": "#Exploration",
+  "role": "Marketing and Ads Designer",
+  "credits": "Emmanuel Folusho Joseph",
+  "year": 2026,
+  "order": 0,
+  "categories": [
+    "Marketing"
+  ],
+  "cover_image": "/media/cms/2c16990d-b20a-4886-bdc0-c53e7dd387d6.webp",
+  "published": true,
+  "sections": [
+    {
+      "id": "f15eda47-56ee-49da-adfc-e4fdcd0f1243",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/18ed5862-a88f-4c22-893b-9b831025561c.webp"
+      ],
+      "order": 0
+    },
+    {
+      "id": "ac1048a4-2d83-4091-8d58-38b010fe3b7b",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/ed6299ea-3156-4b1f-8e50-fc1bd1f0a884.webp",
+        "/media/cms/ce24f352-aeb8-46c7-904c-27a17027f84e.webp"
+      ],
+      "order": 1
+    },
+    {
+      "id": "681357bc-5193-43c7-8518-ad509e92f559",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/125b5bfb-ff65-4bfe-9197-304ebb9f0484.webp"
+      ],
+      "order": 2
+    },
+    {
+      "id": "d7ca09dd-9e29-475a-847f-4798627aeab9",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/e2350290-fccb-454c-a354-ad7b5e5233fa.webp",
+        "https://player.vimeo.com/video/1232201895"
+      ],
+      "order": 3
+    },
+    {
+      "id": "c2abf45e-be71-4320-ac7e-5daa3be79c23",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1232201894"
+      ],
+      "order": 4
+    },
+    {
+      "id": "f22bbc21-559d-4397-bbb1-5130576cc08c",
+      "type": "text",
+      "heading": "Deliverables",
+      "body": "Campaign Foundation               \nCampaign key visual                   Messaging toolkit (tagline, headlines, CTAs)\n\nSocial Media\nInstagram static post                   Instagram carousel          Instagram Stories                      LinkedIn post                               LinkedIn document carousel       \nFacebook post                             Short-form social video\n\nPaid Advertising\nMeta Feed Ads (1:1 & 4:5)           Meta Story Ads (9:16)      Google Display Ads                     \nWeb & Email\nWebsite hero                                Landing page banner       Weekly Tune preview module  Email header                                Newsletter banner                       \n\nPrint & Outdoor\nPoster (A2/A3)                             Flyer (A5)                          Billboard                                  DOOH animation\n\nPresentation                                 \nCase study / pitch deck cover      Roll-up banner\n\nMotion\n6-second ad                                  15-second ad                    30-second ad",
+      "order": 5
+    },
+    {
+      "id": "a90dae6a-84ca-406a-8901-b377fb528ce8",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/be7ead2b-1cee-4165-a749-72f2e70f7488.webp",
+        "/media/cms/e769e877-144c-4f9c-a3d2-27d95529b433.webp"
+      ],
+      "order": 6
+    },
+    {
+      "id": "23295acb-5542-43ec-a94c-40373ed76f91",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/51abf015-1fe7-4db2-8391-1ee65b876c3d.webp"
+      ],
+      "order": 7
+    },
+    {
+      "id": "9565763c-9255-444b-bf55-8ef7f9d12cde",
+      "type": "text",
+      "heading": "Insight",
+      "body": "People don't just want recommendations. They want music that feels picked just for them based on their listening habits.",
+      "order": 8
+    },
+    {
+      "id": "e16d6a98-366a-4143-b886-44282ce79a78",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1232209548"
+      ],
+      "order": 9
+    },
+    {
+      "id": "a86a7caa-a50f-4796-9985-5588022bb1c9",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/cced4a23-abe7-4ce6-98e5-738ab040810c.webp",
+        "/media/cms/e881124a-a69a-47e9-85e0-03155e7df11e.webp"
+      ],
+      "order": 10
+    },
+    {
+      "id": "e43e8d38-e1af-4550-aec1-fa0577180099",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1232201892"
+      ],
+      "order": 11
+    },
+    {
+      "id": "04454805-64fe-408b-86f1-5cfad442e96b",
+      "type": "text",
+      "heading": "Big Idea",
+      "body": "Your Week, Tuned. A weekly drop that turns personalized recommendations into\nsomething people can look forward to every week.",
+      "order": 12
+    },
+    {
+      "id": "3d4bfd76-ad65-42a3-8dc4-2251d4441c10",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/560fb971-2737-49ba-957a-1cc36a937dec.webp"
+      ],
+      "order": 13
+    },
+    {
+      "id": "4c424d89-7aff-402b-a8cc-cf19ff350b89",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/a23192de-7357-49a9-b0d0-fce40625b3b9.webp",
+        "/media/cms/2f79e8ca-b279-4689-b779-51a7da927fb0.webp"
+      ],
+      "order": 14
+    },
+    {
+      "id": "0430c033-bccf-4112-a542-3341c5a896cf",
+      "type": "full-image",
+      "assets": [
+        "/media/cms/4bd5efec-ad91-4ad9-b943-93648d3b09b5.webp"
+      ],
+      "order": 15
+    },
+    {
+      "id": "3621cf44-b50d-4dc7-b17b-80ee77345094",
+      "type": "text",
+      "heading": "What I Learned",
+      "body": "Effective personalization goes beyond data alone. It’s about understanding different types of users and designing for their habits, interests, and routines. Thinking through different user groups helped shape stronger creative ideas and could lead to better campaign performance.",
+      "order": 16
+    },
+    {
+      "id": "f233af7a-7852-457d-95ba-32edb4e37b77",
+      "type": "double-image",
+      "assets": [
+        "/media/cms/5bd72229-621d-4e16-8c16-e24fedd5abc8.webp",
+        "/media/cms/40c00e1e-9f81-449a-bc58-21889f1e328b.webp"
+      ],
+      "order": 17
+    },
+    {
+      "id": "ecf8d827-655b-491d-b3da-e106606057b3",
+      "type": "video",
+      "assets": [
+        "https://player.vimeo.com/video/1232201893"
+      ],
+      "order": 18
+    }
+  ],
+  "id": "spotify-concept-exploration"
+}

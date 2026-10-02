@@ -1,5 +1,6 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import Image from 'next/image';
 
 const EXPERIENCE = [
   { company: 'Dillali', period: 'Jan 2022 — Oct 2022' },
@@ -13,64 +14,73 @@ export default function About() {
       <Navbar />
 
       <main style={{ padding: '0 var(--page-pad)', flex: 1 }}>
-        {/* Bio */}
+        {/* Bio and image */}
         <section
-          style={{
-            paddingTop: '72px',
-            paddingBottom: '64px',
-          }}
-        >
-          <p
-            className="fade-up"
-            style={{
-              fontSize: 'clamp(42px, 4vw, 52px)',
-              fontWeight: 900,
-              fontStyle: 'italic',
-              lineHeight: 1.15,
-              letterSpacing: '-0.02em',
-              marginBottom: '32px',
-            }}
-          >
-            Emmanuel Joseph is a brand and marketing designer with a strong focus on building
-            distinctive visual identities and high-performing campaigns.
-          </p>
-          <p
-            className="fade-up delay-1"
-            style={{
-              fontSize: 'clamp(42px, 4vw, 52px)',
-              fontWeight: 900,
-              fontStyle: 'italic',
-              lineHeight: 1.15,
-              letterSpacing: '-0.02em',
-              opacity: 0.75,
-            }}
-          >
-            Drawing on his experience across digital products and startups, he combines
-            strategic thinking with creative execution to help brands connect with their
-            target audience and grow with clarity and impact.
-          </p>
-        </section>
-
-        {/* Images */}
-        <section
-          className="fade-up delay-2"
+          className="about-hero"
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '16px',
-            marginBottom: '72px',
+            gridTemplateColumns: 'minmax(0, 1fr) minmax(320px, 0.8fr)',
+            alignItems: 'start',
+            gap: 'clamp(32px, 6vw, 96px)',
+            paddingTop: '72px',
+            paddingBottom: '72px',
           }}
         >
-          {[0, 1].map((i) => (
-            <div
-              key={i}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '32px',
+            }}
+          >
+            <p
+              className="fade-up"
               style={{
-                background: 'var(--purple)',
-                borderRadius: 'var(--radius-md)',
-                aspectRatio: '5/4',
+                fontSize: 'clamp(28px, 2.6vw, 36px)',
+                fontWeight: 900,
+                fontStyle: 'italic',
+                lineHeight: 1.15,
+                letterSpacing: '-0.02em',
               }}
+            >
+              Emmanuel Joseph is a brand and marketing designer with a strong focus on building
+              distinctive visual identities and high-performing campaigns.
+            </p>
+            <p
+              className="fade-up delay-1"
+              style={{
+                fontSize: 'clamp(28px, 2.6vw, 36px)',
+                fontWeight: 400,
+                fontStyle: 'italic',
+                lineHeight: 1.15,
+                letterSpacing: '-0.02em',
+                opacity: 0.75,
+              }}
+            >
+              Drawing on his experience across digital products and startups, he combines
+              strategic thinking with creative execution to help brands connect with their
+              target audience and grow with clarity and impact.
+            </p>
+          </div>
+
+          <div
+            className="fade-up delay-2"
+            style={{
+              position: 'relative',
+              overflow: 'hidden',
+              borderRadius: 'var(--radius-md)',
+              aspectRatio: '5/4',
+            }}
+          >
+            <Image
+              src="/media/about/emmanuel-joseph.png"
+              alt="Emmanuel Joseph seated by a window overlooking London"
+              fill
+              sizes="(max-width: 900px) 100vw, 45vw"
+              style={{ objectFit: 'cover', objectPosition: 'center calc(50% - 20px)' }}
+              priority
             />
-          ))}
+          </div>
         </section>
 
         {/* Experience */}
@@ -113,8 +123,8 @@ export default function About() {
       <Footer />
 
       <style>{`
-        @media (max-width: 768px) {
-          section:nth-child(2) {
+        @media (max-width: 900px) {
+          .about-hero {
             grid-template-columns: 1fr !important;
           }
         }

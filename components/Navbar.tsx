@@ -59,10 +59,10 @@ export default function Navbar({ projectTitle, projectCategories, projectYear }:
           {isProject && (
             <>
               {projectCategories?.map((cat) => (
-                <TagPill key={cat} label={cat} variant="outlined" size="sm" />
+                <TagPill key={cat} label={cat} variant="outlined" size="sm" height={40} />
               ))}
               {projectYear && (
-                <TagPill label={String(projectYear)} variant="outlined" size="sm" />
+                <TagPill label={String(projectYear)} variant="outlined" size="sm" height={40} />
               )}
               <button className="nav-back-btn" onClick={() => router.back()} aria-label="Go back">
                 ←
@@ -189,6 +189,8 @@ export default function Navbar({ projectTitle, projectCategories, projectYear }:
         .nav-back-btn {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
+          height: 40px;
           padding: 6px 12px;
           border-radius: 6px;
           border: 1.5px solid #B300EF;

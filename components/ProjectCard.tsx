@@ -56,7 +56,8 @@ export default function ProjectCard({ project }: { project: Project }) {
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              padding: '6px 14px',
+              height: '40px',
+              padding: '0 16px',
               borderRadius: 'var(--radius-pill)',
               background: 'var(--purple)',
               color: 'var(--white)',
@@ -71,9 +72,9 @@ export default function ProjectCard({ project }: { project: Project }) {
         {/* Tags row */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
           {project.categories.map((cat) => (
-            <TagPill key={cat} label={cat} variant="outlined" size="sm" />
+            <TagPill key={cat} label={cat} variant="outlined" size="sm" height={40} />
           ))}
-          <TagPill label={String(project.year)} variant="outlined" size="sm" />
+          <TagPill label={String(project.year)} variant="outlined" size="sm" height={40} />
         </div>
       </article>
     </Link>

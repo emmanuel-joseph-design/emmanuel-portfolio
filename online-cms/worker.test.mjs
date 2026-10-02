@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import worker, { openSession, sealSession, validateProject } from './src/worker.mjs';
 
 const env = {
-  GITHUB_OWNER: 'emmanuel-joseph-design', CONTENT_REPO: 'portfolio-content', SITE_REPO: 'emmanuel-portfolio',
+  GITHUB_OWNER: 'emmanueljosephdesign', CONTENT_REPO: 'portfolio-content', SITE_REPO: 'emmanueljosephdesign.github.io',
   ALLOWED_LOGIN: 'FolushoJoseph', SITE_URL: 'https://example.com/',
   SESSION_SECRET: 'a-secure-test-secret-with-more-than-32-characters', GITHUB_CLIENT_ID: 'client', GITHUB_CLIENT_SECRET: 'secret',
   ASSETS: { fetch: () => new Response('asset') },
@@ -177,10 +177,10 @@ test('project listing derives publication and pending-change state from the publ
   globalThis.fetch = async (input) => {
     const url = new URL(typeof input === 'string' ? input : input.url);
     const response = (value, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
-    if (url.pathname.endsWith('/repos/emmanuel-joseph-design/portfolio-content')) return response({ id: 1 });
+    if (url.pathname.endsWith('/repos/emmanueljosephdesign/portfolio-content')) return response({ id: 1 });
     if (url.pathname.endsWith('/contents/projects') && url.searchParams.get('ref') === 'main') return response([{ type: 'file', name: 'identity-project.json' }]);
     if (url.pathname.endsWith('/portfolio-content/contents/projects/identity-project.json')) return response({ content: toBase64(JSON.stringify(baseProject)) });
-    if (url.pathname.endsWith('/emmanuel-portfolio/contents/content/projects/identity-project.json')) return response({ content: toBase64(JSON.stringify(publicProject)) });
+    if (url.pathname.endsWith('/emmanueljosephdesign.github.io/contents/content/projects/identity-project.json')) return response({ content: toBase64(JSON.stringify(publicProject)) });
     return response({ message: `Unexpected mock request: ${url.pathname}` }, 500);
   };
   const request = await authenticatedRequest('/api/projects');

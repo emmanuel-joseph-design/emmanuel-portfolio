@@ -9,11 +9,11 @@
     "run_worker_first": true
   },
   "vars": {
-    "GITHUB_OWNER": "emmanuel-joseph-design",
+    "GITHUB_OWNER": "emmanueljosephdesign",
     "CONTENT_REPO": "portfolio-content",
-    "SITE_REPO": "emmanuel-portfolio",
+    "SITE_REPO": "emmanueljosephdesign.github.io",
     "ALLOWED_LOGIN": "FolushoJoseph",
-    "SITE_URL": "https://emmanuel-joseph-design.github.io/emmanuel-portfolio/"
+    "SITE_URL": "https://emmanueljosephdesign.github.io/"
   },
   "secrets": {
     "required": ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "SESSION_SECRET"]

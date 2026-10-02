@@ -64,7 +64,7 @@ for (const failBuild of [false,true]) test(`publishing ${failBuild ? 'stops befo
     calls.push([file,...args]);
     if(file!== 'git'){if(failBuild)throw new Error('Build failed');return '';}
     if(args[0]==='branch')return 'main';
-    if(args[0]==='remote')return 'https://github.com/emmanuel-joseph-design/emmanuel-portfolio.git';
+    if(args[0]==='remote')return 'https://github.com/emmanueljosephdesign/emmanueljosephdesign.github.io.git';
     if(args[0]==='rev-list')return '0';
     if(args[0]==='diff'&&args.includes('--cached')&&calls.some((c)=>c[1]==='add'))return 'content/projects/test-project.json';
     return '';

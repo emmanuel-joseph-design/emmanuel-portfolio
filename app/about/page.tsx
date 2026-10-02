@@ -1,6 +1,7 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Image from 'next/image';
+import { assetPath } from '@/lib/asset-path';
 
 const EXPERIENCE = [
   { company: 'Dillali', period: 'Jan 2022 — Oct 2022' },
@@ -73,7 +74,7 @@ export default function About() {
             }}
           >
             <Image
-              src="/media/about/emmanuel-joseph.png"
+              src={assetPath('/media/about/emmanuel-joseph.png')}
               alt="Emmanuel Joseph seated by a window overlooking London"
               fill
               sizes="(max-width: 900px) 100vw, 45vw"

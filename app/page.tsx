@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProjectCard from '@/components/ProjectCard';
+import IntroAnimation from '@/components/IntroAnimation';
 import { getProjects } from '@/lib/projects';
 
 export default async function Home() {
@@ -9,6 +10,7 @@ export default async function Home() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <IntroAnimation />
       <Navbar />
 
       <main style={{ padding: '0 var(--page-pad)', flex: 1 }}>
